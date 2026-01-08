@@ -1,43 +1,42 @@
+import axios from 'axios';
+
 export async function POST(request) {
   try {
     const { code, language, input } = await request.json();
 
-    // Using Piston API for code execution (free alternative to CodeX)
-    const pistonLanguage = language === 'javascript' ? 'js' : language;
-
-    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-      method: 'POST',
+    // Using Judge0 API for code execution
+    const response = await axios.post(`${process.env.JUDGE0_BASE_URL}/submissions`, {
+      source_code: code,
+      language_id: language === 'javascript' ? 63 : 71, // 63 for JS, 71 for Python
+      stdin: input,
+    }, {
       headers: {
-        'Content-Type': 'application/json',
+        'X-RapidAPI-Key': process.env.JUDGE0_API_KEY,
+        'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
       },
-      body: JSON.stringify({
-        language: pistonLanguage,
-        version: language === 'javascript' ? '18.15.0' : '3.10.0',
-        files: [{
-          content: code
-        }],
-        stdin: input || '',
-        args: [],
-        compile_timeout: 10000,
-        run_timeout: 3000,
-        compile_memory_limit: -1,
-        run_memory_limit: -1
-      })
     });
 
-    if (!response.ok) {
-      throw new Error(`Piston API error: ${response.status}`);
-    }
+    const token = response.data.token;
 
-    const result = await response.json();
+    // Wait for execution result
+    let result;
+    do {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const statusResponse = await axios.get(`${process.env.JUDGE0_BASE_URL}/submissions/${token}`, {
+        headers: {
+          'X-RapidAPI-Key': process.env.JUDGE0_API_KEY,
+          'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
+        },
+      });
+      result = statusResponse.data;
+    } while (result.status.id <= 2); // 1: In Queue, 2: Processing
 
-    if (result.run && result.run.stderr) {
-      return Response.json({ output: `Error: ${result.run.stderr}` });
-    }
-
-    return Response.json({ output: result.run.stdout || result.run.stderr || 'No output' });
+    return Response.json({
+      output: result.stdout || result.stderr || result.compile_output,
+      status: result.status.description,
+    });
   } catch (error) {
     console.error('Error executing code:', error);
-    return Response.json({ output: 'Error executing code. Please try again.' }, { status: 500 });
+    return Response.json({ error: 'Failed to execute code' }, { status: 500 });
   }
 }

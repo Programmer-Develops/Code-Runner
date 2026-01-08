@@ -4,7 +4,6 @@ import Question from '@/models/Question';
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Define a strict JSON schema for the generated question
 const responseJsonSchema = {
   type: 'object',
   properties: {
@@ -37,7 +36,7 @@ export async function POST(request) {
 
     await connectToDatabase();
 
-    const model = 'gemini-2.5-flash'; // Current best fast & capable model (stable)
+    const model = 'gemini-3-flash-preview';  // ← Updated model (more stable + better)
 
     const prompt = `Generate a coding question for ${difficulty} difficulty in ${language}.
 Include a title, description, and exactly 3 test cases with input and expected output.
@@ -56,12 +55,11 @@ Do not add any explanations, markdown, or extra text.`;
       model,
       contents: prompt,
       config: {
-        responseMimeType: 'application/json',        // Forces pure JSON (no ```json fences)
-        responseJsonSchema,                          // Enforces exact structure
+        responseMimeType: 'application/json',
+        responseJsonSchema,
       },
     });
 
-    // result.text is now guaranteed to be valid JSON string
     let generatedQuestion;
     try {
       generatedQuestion = JSON.parse(result.text.trim());
@@ -70,23 +68,20 @@ Do not add any explanations, markdown, or extra text.`;
       return Response.json({ error: 'Invalid JSON from AI' }, { status: 500 });
     }
 
-    // Validate required fields (extra safety)
     if (!generatedQuestion.title || !generatedQuestion.description || !Array.isArray(generatedQuestion.testCases) || generatedQuestion.testCases.length !== 3) {
       console.error('Invalid structure from AI:', generatedQuestion);
       return Response.json({ error: 'AI returned incomplete question' }, { status: 500 });
     }
 
-    // Assign XP based on difficulty
     let xp;
     if (difficulty === 'Easy') {
-      xp = Math.floor(Math.random() * 16) + 5; // 5-20
+      xp = Math.floor(Math.random() * 16) + 5;
     } else if (difficulty === 'Hard') {
-      xp = Math.floor(Math.random() * 40) + 21; // 21-60
+      xp = Math.floor(Math.random() * 40) + 21;
     } else {
-      xp = Math.floor(Math.random() * 51) + 61; // 61-110 (Medium)
+      xp = Math.floor(Math.random() * 51) + 61;
     }
 
-    // Save to database
     const question = new Question({
       title: generatedQuestion.title,
       description: generatedQuestion.description,

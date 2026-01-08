@@ -7,11 +7,21 @@ export async function POST(request) {
   try {
     const { userId, questionId, code, language, output } = await request.json();
 
+    // Validate required fields
+    if (!userId || !questionId || !code || !language) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
     await connectToDatabase();
 
     const question = await Question.findById(questionId);
     if (!question) {
       return Response.json({ error: 'Question not found' }, { status: 404 });
+    }
+
+    // Validate output exists
+    if (!output || typeof output !== 'string') {
+      return Response.json({ error: 'Invalid output provided' }, { status: 400 });
     }
 
     // Simple validation: check if output matches expected for first test case
