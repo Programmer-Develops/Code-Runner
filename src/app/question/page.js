@@ -1,9 +1,9 @@
+// src/app/question/page.js
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import CodeEditor from '@/components/CodeEditor';
 
 export default function QuestionPage() {
   const { data: session } = useSession();
@@ -13,7 +13,38 @@ export default function QuestionPage() {
 
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [code, setCode] = useState('');
+  const [output, setOutput] = useState('');
+  const [executing, setExecuting] = useState(false);
+  const [testResults, setTestResults] = useState([]);
+  const [activeTab, setActiveTab] = useState('testcases');
 
+  // Initialize code template based on language
+  useEffect(() => {
+    if (language && question) {
+      const templates = {
+        javascript: `// Write your solution here
+function solution(str) {
+    // Your code here
+    
+}
+
+// Test with INPUT
+console.log(solution(INPUT));`,
+        python: `# Write your solution here
+def solution(s):
+    # Your code here
+    pass
+
+# Test with INPUT
+print(solution(INPUT))`
+      };
+      
+      setCode(templates[language.toLowerCase()] || '');
+    }
+  }, [language, question]);
+
+  // Fetch AI-generated question
   useEffect(() => {
     if (difficulty && language) {
       const fetchQuestion = async () => {
@@ -40,22 +71,118 @@ export default function QuestionPage() {
     }
   }, [difficulty, language]);
 
-  const handleExecute = async (code, lang, input) => {
-    try {
-      const response = await fetch('/api/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language: lang, input }),
-      });
-      return await response.json();
-    } catch (error) {
-      console.error('Error executing code:', error);
-      return { output: 'Error executing code' };
+  // Run all test cases
+  const runTests = async () => {
+    if (!question || !question.testCases || question.testCases.length === 0) {
+      setOutput('No test cases available');
+      return;
+    }
+
+    setExecuting(true);
+    setTestResults([]);
+    setOutput('Running test cases...');
+    setActiveTab('results');
+
+    const results = [];
+
+    for (let i = 0; i < question.testCases.length; i++) {
+      const testCase = question.testCases[i];
+      
+      try {
+        const response = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            code, 
+            language: language.toLowerCase(), 
+            input: testCase.input 
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (result.status === 'Error') {
+          // If there's an error, mark all remaining tests as failed
+          results.push({
+            testCase: i + 1,
+            input: testCase.input,
+            expected: testCase.expectedOutput,
+            actual: result.output,
+            passed: false,
+            error: true,
+            status: 'Error'
+          });
+          break; // Stop testing on first error
+        }
+
+        const actualOutput = (result.output || '').trim();
+        const expectedOutput = (testCase.expectedOutput || '').trim();
+        const passed = actualOutput === expectedOutput;
+
+        results.push({
+          testCase: i + 1,
+          input: testCase.input,
+          expected: expectedOutput,
+          actual: actualOutput,
+          passed,
+          error: false,
+          status: result.status
+        });
+      } catch (error) {
+        results.push({
+          testCase: i + 1,
+          input: testCase.input,
+          expected: testCase.expectedOutput,
+          actual: 'Network Error',
+          passed: false,
+          error: true,
+          status: 'Error'
+        });
+        break;
+      }
+    }
+
+    setTestResults(results);
+    setExecuting(false);
+
+    // Summary message
+    const passedCount = results.filter(r => r.passed).length;
+    const totalCount = results.length;
+    
+    if (passedCount === totalCount && totalCount === question.testCases.length) {
+      setOutput(`✓ Accepted\n\nAll ${totalCount} test cases passed!`);
+    } else if (results.some(r => r.error)) {
+      setOutput(`✗ Runtime Error\n\n${results.find(r => r.error)?.actual}`);
+    } else {
+      setOutput(`✗ Wrong Answer\n\n${passedCount}/${question.testCases.length} test cases passed`);
     }
   };
 
-  const handleSubmit = async (code, lang, output) => {
-    if (!question || !session) return;
+  // Submit solution
+  const handleSubmit = async () => {
+    if (!question || !session) {
+      alert('⚠️ Please sign in to submit!');
+      return;
+    }
+
+    // Must run tests first
+    if (testResults.length === 0) {
+      alert('⚠️ Please run test cases before submitting!');
+      return;
+    }
+
+    const allPassed = testResults.every(r => r.passed);
+    const totalTests = question.testCases?.length || 0;
+    
+    if (!allPassed) {
+      const passedCount = testResults.filter(r => r.passed).length;
+      const confirmSubmit = confirm(
+        `Only ${passedCount}/${totalTests} test cases passed.\n\nAre you sure you want to submit?`
+      );
+      if (!confirmSubmit) return;
+    }
+
+    setExecuting(true);
 
     try {
       const response = await fetch('/api/submit', {
@@ -65,31 +192,42 @@ export default function QuestionPage() {
           userId: session.user.id,
           questionId: question._id,
           code,
-          language: lang,
-          output,
+          language: language.toLowerCase(),
+          testResults,
+          passed: allPassed
         }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        alert(`Submission ${result.status}! You earned ${result.xpEarned || 0} XP. 🎉`);
-        // Redirect to home/dashboard
+        const xpEarned = result.xpEarned || 0;
+        const status = result.status || 'Submitted';
+        const message = result.message || `You earned ${xpEarned} XP!`;
+        
+        alert(`🎉 ${status}!\n\n${message}\n\nXP Earned: ${xpEarned}`);
         window.location.href = '/';
       } else {
-        alert(`Submission failed: ${result.message || 'Unknown error'}`);
+        const errorMsg = result.error || result.message || 'Unknown error';
+        alert(`❌ Submission failed\n\n${errorMsg}`);
+        console.error('Submission error details:', result);
       }
     } catch (error) {
       console.error('Error submitting code:', error);
-      alert('Error submitting code. Please try again.');
+      alert(`❌ Network Error\n\nFailed to connect to server. Please check your connection and try again.`);
+    } finally {
+      setExecuting(false);
     }
   };
 
   // Auth check
   if (!session) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-xl">
-        Please sign in to continue.
+      <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
+        <div className="text-center">
+          <h2 className="text-2xl mb-4">Authentication Required</h2>
+          <p>Please sign in to continue.</p>
+        </div>
       </div>
     );
   }
@@ -97,8 +235,11 @@ export default function QuestionPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-xl">
-        Generating your coding challenge...
+      <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-xl">Generating your coding challenge...</p>
+        </div>
       </div>
     );
   }
@@ -106,94 +247,201 @@ export default function QuestionPage() {
   // Error state
   if (!question) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-xl text-red-600">
-        Error loading question. Please try again.
+      <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
+        <div className="text-center text-red-400">
+          <h2 className="text-2xl mb-4">Error</h2>
+          <p>Failed to load question. Please try again.</p>
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="mt-4 bg-blue-600 px-6 py-2 rounded hover:bg-blue-700"
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     );
   }
 
-  // Capitalize language name for display
-  const formattedLanguage =
-    language.charAt(0).toUpperCase() + language.slice(1);
-
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Question Panel */}
-        <div className="bg-white p-8 rounded-xl shadow-lg">
-          <h2 className="text-3xl font-bold mb-6 text-gray-800">
-            {question.title}
-          </h2>
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+      {/* Header */}
+      <div className="border-b border-gray-700 bg-gray-800 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-bold">{question.title}</h1>
+          <span className={`px-3 py-1 rounded text-xs font-semibold ${
+            difficulty === 'Easy' ? 'bg-green-600' :
+            difficulty === 'Medium' ? 'bg-yellow-600' :
+            'bg-red-600'
+          }`}>
+            {difficulty}
+          </span>
+        </div>
+        <button 
+          onClick={() => window.location.href = '/'}
+          className="text-gray-400 hover:text-white"
+        >
+          ← Back
+        </button>
+      </div>
 
-          <div className="prose max-w-none mb-8 text-gray-700">
-            <p className="whitespace-pre-wrap">{question.description}</p>
-          </div>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Panel - Problem Description */}
+        <div className="w-1/2 border-r border-gray-700 overflow-auto">
+          <div className="p-6">
+            <div className="prose prose-invert max-w-none">
+              <p className="text-gray-300 text-base leading-relaxed whitespace-pre-wrap mb-6">
+                {question.description}
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <div>
-              <span className="font-semibold">Difficulty:</span>{' '}
-              <span
-                className={`ml-2 px-3 py-1 rounded-full text-white text-sm ${
-                  question.difficulty === 'Easy'
-                    ? 'bg-green-500'
-                    : question.difficulty === 'Medium'
-                    ? 'bg-yellow-500'
-                    : 'bg-red-500'
-                }`}
-              >
-                {question.difficulty}
-              </span>
-            </div>
-            <div>
-              <span className="font-semibold">Language:</span>{' '}
-              <span className="ml-2">{formattedLanguage}</span>
-            </div>
-            <div>
-              <span className="font-semibold">Potential XP:</span>{' '}
-              <span className="ml-2 font-bold text-purple-600">
-                {question.xp}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-xl mb-4">Sample Test Cases</h3>
-            {question.testCases && question.testCases.length > 0 ? (
-              question.testCases.map((testCase, index) => (
-                <div
-                  key={testCase._id || index} // Prefer unique ID if available
-                  className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg"
-                >
-                  <p className="font-medium mb-2">Test Case {index + 1}</p>
-                  <div>
-                    <strong>Input:</strong>
-                    <pre className="mt-1 p-2 bg-gray-100 rounded text-sm overflow-x-auto">
-                      {testCase.input || 'N/A'}
-                    </pre>
-                  </div>
-                  <div className="mt-3">
-                    <strong>Expected Output:</strong>
-                    <pre className="mt-1 p-2 bg-gray-100 rounded text-sm overflow-x-auto">
-                      {testCase.expectedOutput || 'N/A'}
-                    </pre>
+            {/* Test Cases */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3">Examples:</h3>
+              {question.testCases && question.testCases.slice(0, 2).map((testCase, index) => (
+                <div key={index} className="mb-4 bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <p className="font-semibold mb-2 text-sm text-gray-400">Example {index + 1}:</p>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-medium text-gray-400">Input:</span>
+                      <pre className="text-sm bg-gray-900 p-2 rounded mt-1 font-mono">
+                        {testCase.input}
+                      </pre>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-400">Output:</span>
+                      <pre className="text-sm bg-gray-900 p-2 rounded mt-1 font-mono">
+                        {testCase.expectedOutput}
+                      </pre>
+                    </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-red-500 italic">
-                No test cases available. Please refresh or try a new challenge.
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <p className="text-sm">
+                <span className="font-semibold text-purple-400">Reward:</span>{' '}
+                <span className="text-white">{question.xp} XP</span>
               </p>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* Code Editor Panel */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <CodeEditor
-            language={language}
-            onExecute={handleExecute}
-            onSubmit={handleSubmit}
-          />
+        {/* Right Panel - Code Editor */}
+        <div className="w-1/2 flex flex-col">
+          {/* Language & Actions */}
+          <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 flex items-center justify-between">
+            <span className="text-sm font-medium">{language}</span>
+            <div className="flex gap-2">
+              <button
+                onClick={runTests}
+                disabled={executing}
+                className="bg-white text-gray-900 hover:bg-gray-200 px-4 py-1.5 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {executing ? 'Running...' : 'Run'}
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={executing}
+                className="bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+
+          {/* Code Editor */}
+          <div className="flex-1 overflow-hidden">
+            <textarea
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full h-full bg-gray-900 p-4 font-mono text-sm resize-none focus:outline-none"
+              placeholder="Write your code here..."
+              spellCheck="false"
+              style={{ fontFamily: 'Monaco, Consolas, "Courier New", monospace' }}
+            />
+          </div>
+
+          {/* Results Panel */}
+          <div className="h-64 border-t border-gray-700 bg-gray-800 flex flex-col">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-700">
+              <button
+                onClick={() => setActiveTab('testcases')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                  activeTab === 'testcases' 
+                    ? 'border-white text-white' 
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                Test Cases
+              </button>
+              <button
+                onClick={() => setActiveTab('results')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                  activeTab === 'results' 
+                    ? 'border-white text-white' 
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                Test Results
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-4">
+              {activeTab === 'testcases' && (
+                <div className="space-y-3">
+                  {question.testCases?.map((tc, i) => (
+                    <div key={i} className="text-sm">
+                      <p className="text-gray-400 mb-1">Case {i + 1} =</p>
+                      <pre className="bg-gray-900 p-2 rounded font-mono text-xs">
+                        {tc.input}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === 'results' && (
+                <div>
+                  {testResults.length === 0 ? (
+                    <p className="text-gray-400 text-sm">Run code to see results</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <pre className="text-sm whitespace-pre-wrap mb-4">{output}</pre>
+                      {testResults.map((test, idx) => (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded border text-sm ${
+                            test.passed
+                              ? 'bg-green-900/20 border-green-600'
+                              : 'bg-red-900/20 border-red-600'
+                          }`}
+                        >
+                          <div className="flex justify-between mb-2">
+                            <span className="font-medium">Case {test.testCase}</span>
+                            <span className={`font-bold ${
+                              test.passed ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {test.passed ? 'Passed' : 'Failed'}
+                            </span>
+                          </div>
+                          {!test.passed && (
+                            <div className="space-y-1 text-xs">
+                              <p><span className="text-gray-400">Input:</span> {test.input}</p>
+                              <p><span className="text-gray-400">Expected:</span> {test.expected}</p>
+                              <p><span className="text-gray-400">Got:</span> {test.actual}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

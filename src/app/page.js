@@ -19,7 +19,7 @@ export default function Home() {
   const { data: session } = useSession();
   const [leaderboard, setLeaderboard] = useState([]);
   const [difficulty, setDifficulty] = useState('Easy');
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('python');
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -89,8 +89,8 @@ export default function Home() {
                 onChange={(e) => setLanguage(e.target.value)}
                 className="w-full p-2 border rounded"
               >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
+                <option value="python">Python</option>                
+                <option value="javascript">JavaScript | testing</option>
               </select>
             </div>
             <button
