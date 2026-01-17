@@ -8,8 +8,8 @@ const nextConfig = {
     turbopack: false,
   },
 
-  // externalize child_process explicitly (helps in some Turbopack cases)
-  serverExternalPackages: ['child_process'],
+  // // externalize child_process explicitly (helps in some Turbopack cases)
+  // serverExternalPackages: ['child_process'],
 
   images: {
     remotePatterns: [
