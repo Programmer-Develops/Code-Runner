@@ -34,6 +34,23 @@ const handler = NextAuth({
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+
+  trustHost: true,                  // Trust forwarded headers from Render proxy
+
+  useSecureCookies: true,           // Force secure + prefixed cookies (HTTPS required)
+
+  // Optional: Customize PKCE/state cookies if still issues (rarely needed)
+  cookies: {
+    pkceCodeVerifier: {
+      name: '__Secure-next-auth.pkce.code_verifier',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+      },
+    },
+  },
 });
 
 export { handler as GET, handler as POST };
