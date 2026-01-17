@@ -2,14 +2,14 @@
 const nextConfig = {
   reactCompiler: true,
 
-  // Recommended for most projects with Node.js builtins in server code
-  // until Turbopack fully supports them reliably
-  experimental: {
-    turbopack: false,
-  },
+  // // Recommended for most projects with Node.js builtins in server code
+  // // until Turbopack fully supports them reliably
+  // experimental: {
+  //   turbopack: false,
+  // },
 
-  // // externalize child_process explicitly (helps in some Turbopack cases)
-  // serverExternalPackages: ['child_process'],
+  // // // externalize child_process explicitly (helps in some Turbopack cases)
+  // // serverExternalPackages: ['child_process'],
 
   images: {
     remotePatterns: [
