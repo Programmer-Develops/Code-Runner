@@ -2,10 +2,10 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function QuestionPage() {
+function QuestionPageContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const difficulty = searchParams.get('difficulty');
@@ -445,5 +445,20 @@ print(solution(INPUT))`
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuestionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-xl">Loading...</p>
+        </div>
+      </div>
+    }>
+      <QuestionPageContent />
+    </Suspense>
   );
 }
