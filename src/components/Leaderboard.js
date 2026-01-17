@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';   // changed from <img/> to 'next/image'
+
 export default function Leaderboard({ data }) {
   return (
     <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 md:p-8 shadow-xl">
@@ -28,16 +30,22 @@ export default function Leaderboard({ data }) {
 
                 <div className="flex items-center gap-3">
                   {user.image ? (
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"
-                    />
+                    <div className="relative w-10 h-10">  {/* wrapper div for fixed size */}
+                      <Image
+                        src={user.image}
+                        alt={user.name || 'User'}
+                        fill                // fills the parent div
+                        className="rounded-full object-cover border-2 border-gray-600"
+                        sizes="40px"         // exact size hint
+                        priority={index === 0} // optional: load top user faster
+                      />
+                    </div>
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-semibold">
                       {user.name?.[0]?.toUpperCase() || '?'}
                     </div>
                   )}
+
                   <span className="font-medium text-gray-100 truncate max-w-[180px] md:max-w-[260px]">
                     {user.name || 'Anonymous'}
                   </span>

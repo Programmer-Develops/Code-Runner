@@ -111,7 +111,7 @@ export default function Home() {
                            outline-none transition-all"
                 >
                   <option value="python">Python</option>
-                  <option value="javascript">JavaScript</option>
+                  <option value="javascript">JavaScript | under testing</option>
                 </select>
               </div>
 
