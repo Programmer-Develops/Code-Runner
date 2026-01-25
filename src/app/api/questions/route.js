@@ -38,7 +38,7 @@ export async function POST(request) {
 
     const model = 'gemini-3-flash-preview';  // ← Updated model (more stable + better)
 
-    const prompt = `Generate a coding question for ${difficulty} difficulty in ${language}.
+    const prompt = `Generate a unique coding question for ${difficulty} difficulty in ${language}.
 Include a title, description, and exactly 3 test cases with input and expected output.
 Respond ONLY with valid JSON matching this exact structure:
 {

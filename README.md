@@ -28,7 +28,7 @@ A Full-Stack web application that integrates AI for intelligent problem generati
 
 ## Project Structure
 
-`
+```
 coderunner/
  src/
     app/
@@ -64,7 +64,7 @@ coderunner/
  postcss.config.mjs               # PostCSS configuration
  jsconfig.json                    # JavaScript configuration
  eslint.config.mjs                # ESLint configuration
-`
+```
 
 ## Workflow
 
