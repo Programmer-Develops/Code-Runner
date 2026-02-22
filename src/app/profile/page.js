@@ -38,6 +38,27 @@ export default function ProfilePage() {
             </div>
         );
     }
+    return (
+        <div style={{ padding: "2rem" }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                <div style={{ width: 96, height: 96, borderRadius: 12, overflow: 'hidden', background: '#f3f3f3' }}>
+                    {session.user.image ? (
+                        <Image src={session.user.image} alt="avatar" width={96} height={96} />
+                    ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>👤</div>
+                    )}
+                </div>
+                <div>
+                    <h1 style={{ margin: 0 }}>{session.user.name}</h1>
+                    <p style={{ margin: 0, color: 'var(--muted)' }}>{session.user.email}</p>
+                    <div style={{ marginTop: 8 }}>
+                        <strong>XP:</strong> {profile?.stats?.xp ?? session.user.xp ?? 0}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    )
 }
 
 function Stat({ label, value }) {
