@@ -75,7 +75,7 @@ const buttonStyle = {
     background: '#0070f3',
     color: '#fff',
     border: 'none',
-    borderRadius: 6,
+    borderRadius:6,
     cursor: "pointer" 
     
 };
