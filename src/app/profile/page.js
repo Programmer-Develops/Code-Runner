@@ -57,6 +57,57 @@ export default function ProfilePage() {
                 </div>
 
             </div>
+            <hr style={{ margin: '1.5rem 0' }} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '1.5rem' }}>
+                <main style={{ background: 'var(--card-background)', color: 'var(--card-foreground)', padding: '1rem', borderRadius: 8 }}>
+                    <h2 style={{ marginTop: 0 }}>Activity</h2>
+
+                    {loading && <p>Loading recent activity...</p>}
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+
+                    {!loading && profile?.recent?.length === 0 && <p>No activity yet. Start solving problems to see activity here!</p>}
+
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        {profile?.recent?.map((item) => (
+                            <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border)' }}>
+                                <div>
+                                    <div style={{ fontWeight: 600 }}>{item.questionTitle}</div>
+                                    <div style={{ color: 'var(--muted)' }}>{item.difficulty} • {item.testsPassed}/{item.testsTotal} tests</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div style={{ fontWeight: 700 }}>{item.status === 'accepted' ? '✅ Accepted' : item.status}</div>
+                                    <div style={{ color: 'var(--muted)' }}>{item.xpEarned} XP</div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </main>
+
+                <aside style={{ background: 'var(--card-background)', color: 'var(--card-foreground)', padding: '1rem', borderRadius: 8 }}>
+                    <h3 style={{ marginTop: 0 }}>Stats</h3>
+                    <div style={{ display: 'grid', gap: 8 }}>
+                        <Stat label="XP" value={profile?.stats?.xp ?? session.user.xp ?? 0} />
+                        <Stat label="Problems Solved" value={profile?.stats?.uniqueSolvedQuestions ?? 0} />
+                        <Stat label="Problems Attempted" value={profile?.stats?.uniqueQuestionsAttempted ?? 0} />
+                        <Stat label="Total Attempts" value={profile?.stats?.totalAttempts ?? 0} />
+                    </div>
+
+                    <hr style={{ margin: '1rem 0' }} />
+
+                    <h3 style={{ margin: '0 0 8px 0' }}>Badges</h3>
+                    {profile?.badges?.length === 0 && <p>No badges yet — keep solving to earn badges!</p>}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {profile?.badges?.map(b => (
+                            <div key={b.key} style={{ padding: '0.5rem 0.6rem', borderRadius: 8, background: 'var(--badge-bg)', minWidth: 120, textAlign: 'center', boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.02)' }}>
+                                <div style={{ fontSize: 20 }}>{b.emoji}</div>
+                                <div style={{ fontWeight: 600 }}>{b.name}</div>
+                                <div style={{ color: 'var(--muted)', fontSize: 12 }}>{b.desc}</div>
+                            </div>
+                        ))}
+                    </div>
+                </aside>
+            </div>
         </div>
     )
 }
@@ -75,8 +126,8 @@ const buttonStyle = {
     background: '#0070f3',
     color: '#fff',
     border: 'none',
-    borderRadius:6,
+    borderRadius: 6,
     cursur: "pointer",
     // cursur: "pointer"
-    
+
 };
