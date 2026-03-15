@@ -3,6 +3,18 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Card and surface colors */
+  --card-background: #ffffff;
+  --card-foreground: #111111;
+
+  /* Muted / secondary text */
+  --muted: #666666;
+
+  /* Borders and subtle backgrounds */
+  --border: #f0f0f0;
+  --avatar-bg: #f3f3f3;
+  --badge-bg: #fafafa;
 }
 
 @theme inline {
@@ -16,6 +28,18 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* Card and surface colors */
+    --card-background: #0f1113; /* dark card */
+    --card-foreground: #e6e6e6;
+
+    /* Muted / secondary text */
+    --muted: #b6b6b6;
+
+    /* Borders and subtle backgrounds */
+    --border: #1c1c1c;
+    --avatar-bg: #111213;
+    --badge-bg: #0f1113;
   }
 }
 
