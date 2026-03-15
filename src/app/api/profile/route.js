@@ -120,6 +120,7 @@ export async function GET(request) {
     });
 
     // Recommend a few questions the user hasn't attempted yet
+
     const attemptedIds = Array.from(
       new Set(submissions.map((s) => s.questionId?._id).filter(Boolean)),
     ).map((id) => id.toString());
