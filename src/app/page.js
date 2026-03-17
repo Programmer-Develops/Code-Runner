@@ -3,6 +3,7 @@
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import Leaderboard from '@/components/Leaderboard';
+import Image from 'next/image';
 
 const fetchLeaderboard = async () => {
   try {
@@ -59,13 +60,16 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
             Code Runner
           </h1>
+          {/* linking profile page to home */}
           <div className="flex items-center gap-6 flex-wrap">
-            <span className="text-gray-300">
-              Welcome, <span className="font-semibold text-white">{session.user.name}</span>
-            </span>
             <span className="bg-gray-800 px-4 py-1.5 rounded-full text-sm font-medium">
               XP: <span className="text-yellow-400">{session.user.xp || 0}</span>
             </span>
+            <a href="/profile" >
+              <div style={{ width: 86, height: 86, borderRadius: '100%', overflow: 'hidden' }}>
+                <Image src={session.user.image} alt="avatar" width={86} height={86} />
+              </div>
+            </a>            
             <button
               onClick={() => signOut()}
               className="px-5 py-2.5 bg-red-600/90 hover:bg-red-700 
@@ -73,6 +77,7 @@ export default function Home() {
             >
               Sign Out
             </button>
+
           </div>
         </header>
 
