@@ -131,7 +131,7 @@ const buttonStyle = {
     border: 'none',
     borderRadius:6,
     cursur:"pointer"
-    
-
+    // borderRadius:6,
+    // cursur:"pointer"
 };
 
