@@ -127,11 +127,12 @@ function Stat({ label, value }) {
 const buttonStyle = {
     padding: '0.5rem 0.9rem',
     background: '#0070f3',
-    color: '#fff',
+    color:'#fff',
     border: 'none',
     borderRadius:6,
-    cursur: "pointer"
-    // cursur: "pointer"
-    
+    cursur:"pointer"
+    // borderRadius:6,
+    // cursur:"pointer"
+    // color: '#fff',
 };
 
