@@ -130,7 +130,7 @@ const buttonStyle = {
     color:'#fff',
     border: 'none',
     borderRadius:6,
-    cursur:"Pointer"
+    cursur: "pointer"
     // borderRadius:6,
     // cursur:"pointer"
     // color: '#fff',
