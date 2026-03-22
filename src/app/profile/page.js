@@ -56,6 +56,12 @@ export default function ProfilePage() {
           <div style={{ marginTop: 8 }}>
             <strong>XP:</strong> {profile?.stats?.xp ?? session.user.xp ?? 0}
           </div>
+          {/* Back button */}
+          <button 
+          onClick={() => window.location.href = '/'}
+          className="text-gray-400 hover:text-white"
+        >
+          ← Back</button>
         </div>
       </div>
 
@@ -135,4 +141,5 @@ const buttonStyle = {
     // cursur:"pointer"
     // color: '#fff',
 };
+
 
