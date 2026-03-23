@@ -49,14 +49,48 @@ export default function Home() {
     window.location.href = `/question?difficulty=${difficulty}&language=${language}`;
   };
   if (status === "loading") {
-  return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400 text-sm">Loading...</p>
+    return (
+      <div className="min-h-screen bg-gray-950 text-gray-100 p-6 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header skeleton */}
+          <header className="flex justify-between items-center mb-10">
+            <div className="h-10 w-48 bg-gray-800 rounded-lg animate-pulse" />
+            <div className="flex items-center gap-4">
+              <div className="h-8 w-20 bg-gray-800 rounded-full animate-pulse" />
+              <div className="h-12 w-12 bg-gray-800 rounded-full animate-pulse" />
+              <div className="h-9 w-24 bg-gray-800 rounded-lg animate-pulse" />
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Challenge card skeleton */}
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-8">
+              <div className="h-8 w-48 bg-gray-800 rounded-lg animate-pulse mb-8" />
+              <div className="space-y-6">
+                <div className="h-12 w-full bg-gray-800 rounded-lg animate-pulse" />
+                <div className="h-12 w-full bg-gray-800 rounded-lg animate-pulse" />
+                <div className="h-14 w-full bg-gray-800 rounded-lg animate-pulse mt-4" />
+              </div>
+            </div>
+
+            {/* Leaderboard skeleton */}
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-8">
+              <div className="h-8 w-36 bg-gray-800 rounded-lg animate-pulse mb-6" />
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="h-5 w-5 bg-gray-800 rounded animate-pulse" />
+                    <div className="h-9 w-9 bg-gray-800 rounded-full animate-pulse" />
+                    <div className="h-5 bg-gray-800 rounded animate-pulse flex-1" />
+                    <div className="h-5 w-16 bg-gray-800 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-  );
+    );
   }
   if (status === "unauthenticated") {
     return (
