@@ -38,18 +38,28 @@ export async function POST(request) {
 
     const model = 'gemini-3-flash-preview';  // ← Updated model (more stable + better)
 
-    const prompt = `Generate a unique coding question for ${difficulty} difficulty in ${language}.
-Include a title, description, and exactly 3 test cases with input and expected output.
-Respond ONLY with valid JSON matching this exact structure:
+    const prompt = `Act as an expert competitive programming coach. Generate a unique, algorithmic coding challenge for ${difficulty} difficulty in ${language}.
+
+Constraints for the content:
+1. Title: Creative and concise.
+2. Description: Clear problem statement, including input/output constraints and edge cases.
+3. Test Cases: Exactly 3 test cases. Ensure they cover diverse scenarios (e.g., empty input, large values, or typical use cases).
+
+Output Requirements:
+- Respond ONLY with a single, valid JSON object.
+- No markdown formatting (no \`\`\`json blocks).
+- No prose, explanations, or commentary.
+
+Structure:
 {
   "title": "string",
   "description": "string",
   "testCases": [
     { "input": "string", "expectedOutput": "string" },
-    ...
+    { "input": "string", "expectedOutput": "string" },
+    { "input": "string", "expectedOutput": "string" }
   ]
-}
-Do not add any explanations, markdown, or extra text.`;
+}`;
 
     const result = await genAI.models.generateContent({
       model,
