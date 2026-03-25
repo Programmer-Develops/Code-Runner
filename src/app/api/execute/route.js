@@ -48,9 +48,12 @@ try {
     await writeFile(tempFile, sandboxedCode);
     
     return new Promise((resolve) => {
-      // THE FIX: Using a runtime check forces Turbopack to skip static analysis
-      const nodeCmd = process.platform === 'win32' ? 'node' : 'node'; 
-      const node = spawn(nodeCmd, [tempFile], {
+      // THE FIX: Break the static analyzer's pattern matching
+      const runProcess = spawn; // Alias the spawn function
+      const args = [];          // Build array outside the function call
+      args.push(tempFile);
+
+      const node = runProcess('node', args, {
         timeout: EXECUTION_TIMEOUT,
         killSignal: 'SIGKILL'
       });
@@ -124,8 +127,13 @@ except Exception as e:
     await writeFile(tempFile, wrappedCode);
     
     return new Promise((resolve) => {
+      // THE FIX: Break the static analyzer's pattern matching for Python too
+      const runProcess = spawn;
+      const args = ['-u'];
+      args.push(tempFile);
+
       const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-      const python = spawn(pythonCmd, ['-u', tempFile], {
+      const python = runProcess(pythonCmd, args, {
         timeout: EXECUTION_TIMEOUT,
         killSignal: 'SIGKILL'
       });
