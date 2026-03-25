@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
 import { existsSync } from 'fs';
 
 const EXECUTION_TIMEOUT = 5000; // 5 seconds
