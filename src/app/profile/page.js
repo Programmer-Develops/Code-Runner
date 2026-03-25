@@ -130,7 +130,7 @@ function Stat({ label, value }) {
   );
 }
 
-const buttonStyle = {
+const buttonStyle ={
     padding: '0.5rem 0.9rem',
     background: '#0070f3',
     color:'#fff',
