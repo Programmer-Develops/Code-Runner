@@ -48,7 +48,8 @@ try {
     await writeFile(tempFile, sandboxedCode);
     
     return new Promise((resolve) => {
-      const nodeCmd = 'node'; // Extracted to a variable to bypass Turbopack analysis
+      // THE FIX: Using a runtime check forces Turbopack to skip static analysis
+      const nodeCmd = process.platform === 'win32' ? 'node' : 'node'; 
       const node = spawn(nodeCmd, [tempFile], {
         timeout: EXECUTION_TIMEOUT,
         killSignal: 'SIGKILL'
