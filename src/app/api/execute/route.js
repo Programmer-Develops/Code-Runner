@@ -48,7 +48,8 @@ try {
     await writeFile(tempFile, sandboxedCode);
     
     return new Promise((resolve) => {
-      const node = spawn('node', [tempFile], {
+      const nodeCmd = 'node'; // Extracted to a variable to bypass Turbopack analysis
+      const node = spawn(nodeCmd, [tempFile], {
         timeout: EXECUTION_TIMEOUT,
         killSignal: 'SIGKILL'
       });
