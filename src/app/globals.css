@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
 :root {
   --background: #ffffff;
@@ -24,13 +25,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
 
     /* Card and surface colors */
-    --card-background: #0f1113; /* dark card */
+    --card-background: #0f1113;
     --card-foreground: #e6e6e6;
 
     /* Muted / secondary text */
@@ -43,8 +45,328 @@
   }
 }
 
+/* Base styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Syne', system-ui, sans-serif;
+}
+
+/* ====================== Custom Dark Theme Classes ====================== */
+
+.page {
+  min-height: 100vh;
+  background: #050810;
+  color: #e8eaf0;
+  font-family: 'Syne', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 48px;
+  background: rgba(5, 8, 16, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #00e5ff;
+  letter-spacing: -0.5px;
+}
+
+.xp-pill {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  padding: 6px 14px;
+  background: rgba(255, 184, 0, 0.1);
+  border: 1px solid rgba(255, 184, 0, 0.25);
+  border-radius: 20px;
+  color: #ffb800;
+}
+
+.btn-signout {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid rgba(255, 69, 102, 0.4);
+  color: #ff4566;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
+}
+
+.hero {
+  padding: 64px 0 48px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 48px;
+}
+
+.eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #00e5ff;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-title {
+  font-size: clamp(52px, 7vw, 96px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -3px;
+  margin-bottom: 24px;
+}
+
+.hero-desc {
+  font-size: 15px;
+  color: #5a6070;
+  line-height: 1.7;
+  max-width: 420px;
+  font-weight: 400;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #090d1a;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.stat-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #5a6070;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ticker {
+  padding: 14px 20px;
+  background: #090d1a;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.ticker-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #00e5ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.ticker-inner {
+  display: flex;
+  gap: 48px;
+  animation: ticker 20s linear infinite;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #5a6070;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+.card {
+  background: #090d1a;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #5a6070;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.badge-live {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  color: #00ff94;
+  border: 1px solid rgba(0, 255, 148, 0.3);
+  background: rgba(0, 255, 148, 0.06);
+}
+
+.field-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #5a6070;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.start-btn {
+  width: 100%;
+  padding: 18px;
+  margin-top: 8px;
+  background: #00e5ff;
+  color: #050810;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.signin-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.signin-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 56px 48px;
+  background: #090d1a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.signin-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: #00e5ff;
+  letter-spacing: 2px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.signin-title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 10px;
+}
+
+.signin-sub {
+  font-size: 14px;
+  color: #5a6070;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.signin-btn {
+  width: 100%;
+  padding: 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #e8eaf0;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.signin-footer {
+  margin-top: 24px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #3a3f50;
+}
+
+.skel {
+  background: rgba(255, 255, 255, 0.05);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Add this if you want the ticker animation */
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
