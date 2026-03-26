@@ -100,6 +100,7 @@ export default function ProfilePage() {
             <Stat label="Problems Attempted" value={profile?.stats?.uniqueQuestionsAttempted ?? 0} />
             <Stat label="Total Attempts" value={profile?.stats?.totalAttempts ?? 0} />
           </div> 
+          
 
           <hr style={{ margin: '1rem 0' }} />
 
