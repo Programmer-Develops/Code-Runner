@@ -3,10 +3,12 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation'
 
 function QuestionPageContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  const router = useRouter()
   const difficulty = searchParams.get('difficulty');
   const language = searchParams.get('language');
 
@@ -211,7 +213,7 @@ if __name__ == '__main__':
         const message = result.message || `You earned ${xpEarned} XP!`;
         
         alert(`🎉 ${status}!\n\n${message}\n\nXP Earned: ${xpEarned}`);
-        window.location.href = '/';
+        router.push('/');
       } else {
         const errorMsg = result.error || result.message || 'Unknown error';
         alert(`❌ Submission failed\n\n${errorMsg}`);
@@ -254,7 +256,7 @@ if __name__ == '__main__':
           <h2 className="text-2xl mb-4">Error</h2>
           <p>Failed to load question. Please try again.</p>
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             className="mt-4 bg-blue-600 px-6 py-2 rounded hover:bg-blue-700"
           >
             Back to Home
@@ -279,7 +281,7 @@ if __name__ == '__main__':
           </span>
         </div>
         <button 
-          onClick={() => window.location.href = '/'}
+          onClick={() => router.push('/')}
           className="text-gray-400 hover:text-white"
         >
           ← Back

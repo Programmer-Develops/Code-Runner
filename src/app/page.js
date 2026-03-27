@@ -2,8 +2,10 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Swal from "sweetalert2";
+import Link from "next/link";
 
 const fetchLeaderboard = async () => {
   try {
@@ -24,6 +26,7 @@ export default function Home() {
   const [difficulty, setDifficulty] = useState("Easy");
   const [language, setLanguage] = useState("python");
   const [starting, setStarting] = useState(false);
+  const router = useRouter()
 
   const Toast = Swal.mixin({
     toast: true,
@@ -47,7 +50,7 @@ export default function Home() {
 
   const startChallenge = () => {
     setStarting(true);
-    window.location.href = `/question?difficulty=${difficulty}&language=${language}`;
+    router.push(`/question?difficulty=${difficulty}&language=${language}`);
   };
 
   const DIFF_CONFIG = {
@@ -179,7 +182,7 @@ export default function Home() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span className="xp-pill">⚡ {userXp} XP</span>
 
-          <a href="/profile" style={{ textDecoration: "none" }}>
+          <Link href="/profile" style={{ textDecoration: "none" }}>
             <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#00e5ff,#00ff94)", padding: 2, cursor: "pointer" }}>
               <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "#090d1a", overflow: "hidden" }}>
                 {session.user.image ? (
@@ -191,7 +194,7 @@ export default function Home() {
                 )}
               </div>
             </div>
-          </a>
+          </Link>
 
           <button className="btn-signout" onClick={() => signOut()}>
             sign out
