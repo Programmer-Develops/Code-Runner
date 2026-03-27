@@ -136,10 +136,11 @@ const buttonStyle ={
     color:'#fff',
     border: 'none',
     borderRadius:6,
-    cursur:"pointer"
+    cursur:"pointer",
+    fontSize:'1rem',
     // borderRadius:6,
     // cursur:"pointer"
     // color: '#fff',
-};\
+};
 
 
