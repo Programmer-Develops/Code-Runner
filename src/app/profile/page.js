@@ -140,6 +140,6 @@ const buttonStyle ={
     // borderRadius:6,
     // cursur:"pointer"
     // color: '#fff',
-};\
+};
 
 
