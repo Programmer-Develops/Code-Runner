@@ -18,25 +18,31 @@ function QuestionPageContent() {
   const [testResults, setTestResults] = useState([]);
   const [activeTab, setActiveTab] = useState('testcases');
 
-  // Initialize code template based on language
+  // Initialize code template based on language for standard input (Judge0 compatibility)
   useEffect(() => {
     if (language && question) {
       const templates = {
-        javascript: `// Write your solution here
-function solution(str) {
+        javascript: `const fs = require('fs');
+
+function solution(input) {
     // Your code here
-    
+    return input;
 }
 
-// Test with INPUT
-console.log(solution(INPUT));`,
-        python: `# Write your solution here
-def solution(s):
+// Read from standard input (Judge0 passes input via stdin)
+const inputData = fs.readFileSync(0, 'utf-8').trim();
+console.log(solution(inputData));`,
+        
+        python: `import sys
+
+def solution(input_data):
     # Your code here
     pass
 
-# Test with INPUT
-print(solution(INPUT))`
+if __name__ == '__main__':
+    # Read from standard input (Judge0 passes input via stdin)
+    input_data = sys.stdin.read().strip()
+    print(solution(input_data))`
       };
       
       setCode(templates[language.toLowerCase()] || '');
@@ -70,7 +76,7 @@ print(solution(INPUT))`
     }
   }, [difficulty, language]);
 
-  // Run all test cases
+  // Run all test cases against Judge0 backend
   const runTests = async () => {
     if (!question || !question.testCases || question.testCases.length === 0) {
       setOutput('No test cases available');
@@ -100,18 +106,19 @@ print(solution(INPUT))`
 
         const result = await response.json();
         
-        if (result.status === 'Error') {
-          // If there's an error, mark all remaining tests as failed
+        // Handle Judge0 Compilation, Runtime, or Server Errors
+        if (result.status === 'Error' || !response.ok) {
+          const errorMessage = result.output || result.error || 'Unknown Execution Error';
           results.push({
             testCase: i + 1,
             input: testCase.input,
             expected: testCase.expectedOutput,
-            actual: result.output,
+            actual: errorMessage,
             passed: false,
             error: true,
             status: 'Error'
           });
-          break; // Stop testing on first error
+          break; // Stop testing on first error to save resources
         }
 
         const actualOutput = (result.output || '').trim();
@@ -132,7 +139,7 @@ print(solution(INPUT))`
           testCase: i + 1,
           input: testCase.input,
           expected: testCase.expectedOutput,
-          actual: 'Network Error',
+          actual: 'Network or Server Error',
           passed: false,
           error: true,
           status: 'Error'
@@ -144,14 +151,14 @@ print(solution(INPUT))`
     setTestResults(results);
     setExecuting(false);
 
-    // Summary message
+    // Summary message evaluation
     const passedCount = results.filter(r => r.passed).length;
     const totalCount = results.length;
     
     if (passedCount === totalCount && totalCount === question.testCases.length) {
       setOutput(`✓ Accepted\n\nAll ${totalCount} test cases passed!`);
     } else if (results.some(r => r.error)) {
-      setOutput(`✗ Runtime Error\n\n${results.find(r => r.error)?.actual}`);
+      setOutput(`✗ Execution Error\n\n${results.find(r => r.error)?.actual}`);
     } else {
       setOutput(`✗ Wrong Answer\n\n${passedCount}/${question.testCases.length} test cases passed`);
     }
@@ -164,7 +171,6 @@ print(solution(INPUT))`
       return;
     }
 
-    // Must run tests first
     if (testResults.length === 0) {
       alert('⚠️ Please run test cases before submitting!');
       return;
@@ -219,7 +225,6 @@ print(solution(INPUT))`
     }
   };
 
-  // Auth check
   if (!session) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
@@ -231,7 +236,6 @@ print(solution(INPUT))`
     );
   }
 
-  // Loading state
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
@@ -243,7 +247,6 @@ print(solution(INPUT))`
     );
   }
 
-  // Error state
   if (!question) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
@@ -293,7 +296,7 @@ print(solution(INPUT))`
               </p>
             </div>
 
-            {/* Test Cases */}
+            {/* Test Cases Preview */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3">Examples:</h3>
               {question.testCases && question.testCases.slice(0, 2).map((testCase, index) => (
@@ -330,7 +333,7 @@ print(solution(INPUT))`
         <div className="w-1/2 flex flex-col">
           {/* Language & Actions */}
           <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 flex items-center justify-between">
-            <span className="text-sm font-medium">{language}</span>
+            <span className="text-sm font-medium capitalize">{language}</span>
             <div className="flex gap-2">
               <button
                 onClick={runTests}
@@ -413,9 +416,11 @@ print(solution(INPUT))`
                         <div
                           key={idx}
                           className={`p-3 rounded border text-sm ${
-                            test.passed
-                              ? 'bg-green-900/20 border-green-600'
-                              : 'bg-red-900/20 border-red-600'
+                            test.error 
+                              ? 'bg-red-900/10 border-red-800' // Distinct styling for hard runtime errors
+                              : test.passed
+                                ? 'bg-green-900/20 border-green-600'
+                                : 'bg-red-900/20 border-red-600'
                           }`}
                         >
                           <div className="flex justify-between mb-2">
@@ -423,14 +428,20 @@ print(solution(INPUT))`
                             <span className={`font-bold ${
                               test.passed ? 'text-green-400' : 'text-red-400'
                             }`}>
-                              {test.passed ? 'Passed' : 'Failed'}
+                              {test.error ? 'Error' : test.passed ? 'Passed' : 'Failed'}
                             </span>
                           </div>
                           {!test.passed && (
                             <div className="space-y-1 text-xs">
                               <p><span className="text-gray-400">Input:</span> {test.input}</p>
-                              <p><span className="text-gray-400">Expected:</span> {test.expected}</p>
-                              <p><span className="text-gray-400">Got:</span> {test.actual}</p>
+                              {test.error ? (
+                                <p><span className="text-gray-400">Error:</span> {test.actual}</p>
+                              ) : (
+                                <>
+                                  <p><span className="text-gray-400">Expected:</span> {test.expected}</p>
+                                  <p><span className="text-gray-400">Got:</span> {test.actual}</p>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>

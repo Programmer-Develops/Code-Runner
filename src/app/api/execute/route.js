@@ -1,245 +1,129 @@
 import { NextResponse } from 'next/server';
-import { writeFile, unlink, mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
 
-export const runtime = 'nodejs';          // Required for Vercel + child_process
-export const dynamic = 'force-dynamic';   // Prevents build-time static analysis issues
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-const EXECUTION_TIMEOUT = 5000; // 5 seconds
+// Judge0 CE public instance — free, no API key needed
+const JUDGE0_URL = 'https://ce.judge0.com';
 
-// JavaScript execution - LeetCode style
-async function executeJavaScript(code, input) {
-  const tempFile = join(tmpdir(), `code_js_${Date.now()}_${Math.random().toString(36)}.js`);
-  
-  // Wrap user code to capture the function output
-  const sandboxedCode = `
-// Capture console output
-let consoleOutput = '';
-const originalLog = console.log;
-console.log = (...args) => {
-  const output = args.map(arg => {
-    if (typeof arg === 'boolean') return String(arg);
-    if (typeof arg === 'object') return JSON.stringify(arg);
-    return String(arg);
-  }).join(' ');
-  consoleOutput += output + '\\n';
-  originalLog(...args);
+const LANGUAGE_IDS = {
+  python:     71,  // Python 3.8.1
+  py:         71,
+  javascript: 63,  // Node.js 12.14.0
+  js:         63,
 };
 
-// Input data
-const INPUT = ${JSON.stringify(input)};
+async function submitCode(sourceCode, languageId, stdin) {
+  const res = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=false`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      source_code:     sourceCode,
+      language_id:     languageId,
+      stdin:           stdin || '',
+      cpu_time_limit:  5,
+      memory_limit:    128000,
+    }),
+  });
 
-try {
-  // User's code
-  ${code}
-  
-  // Output the captured console output (trimmed)
-  process.stdout.write(consoleOutput.trim());
-} catch (error) {
-  process.stderr.write(\`Runtime Error: \${error.message}\\n\${error.stack}\`);
-  process.exit(1);
-}
-`;
-
-  try {
-    await writeFile(tempFile, sandboxedCode);
-    
-    return new Promise((resolve) => {
-      // THE FIX: Break the static analyzer's pattern matching
-      const runProcess = spawn; // Alias the spawn function
-      const args = [];          // Build array outside the function call
-      args.push(tempFile);
-
-      const node = runProcess('node', args, {
-        timeout: EXECUTION_TIMEOUT,
-        killSignal: 'SIGKILL'
-      });
-
-      let output = '';
-      let errorOutput = '';
-
-      node.stdout.on('data', (data) => {
-        output += data.toString();
-      });
-
-      node.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      node.on('close', async (code) => {
-        await unlink(tempFile).catch(() => {});
-        
-        if (code === 0) {
-          resolve({ success: true, output: output.trim() });
-        } else {
-          resolve({ success: false, error: errorOutput.trim() });
-        }
-      });
-
-      node.on('error', async (error) => {
-        await unlink(tempFile).catch(() => {});
-        resolve({ success: false, error: `Execution Error: ${error.message}` });
-      });
-
-      setTimeout(() => {
-        node.kill('SIGKILL');
-        unlink(tempFile).catch(() => {});
-        resolve({ success: false, error: 'Time Limit Exceeded (5 seconds)' });
-      }, EXECUTION_TIMEOUT);
-    });
-  } catch (error) {
-    await unlink(tempFile).catch(() => {});
-    throw error;
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`Judge0 submit failed: ${res.status} — ${txt}`);
   }
+
+  const data = await res.json();
+  return data.token;
 }
 
-// Python execution - LeetCode style
-async function executePython(code, input) {
-  const tempDir = join(tmpdir(), 'coderunner');
-  const tempFile = join(tempDir, `code_py_${Date.now()}_${Math.random().toString(36)}.py`);
-  
-  try {
-    if (!existsSync(tempDir)) {
-      await mkdir(tempDir, { recursive: true });
-    }
+async function pollResult(token, maxAttempts = 20) {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, 600)); // wait 600ms between polls
 
-    // Wrap Python code with input handling
-    const wrappedCode = `
-import sys
-import json
+    const res = await fetch(
+      `${JUDGE0_URL}/submissions/${token}?base64_encoded=false&fields=status,stdout,stderr,compile_output`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
-# Input data available as INPUT variable
-INPUT = ${JSON.stringify(input)}
+    if (!res.ok) throw new Error(`Judge0 poll failed: ${res.status}`);
 
-try:
-    # User's code
-${code.split('\n').map(line => '    ' + line).join('\n')}
-except Exception as e:
-    print(f"Runtime Error: {str(e)}", file=sys.stderr)
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
-`;
+    const data = await res.json();
+    const statusId = data.status?.id;
 
-    await writeFile(tempFile, wrappedCode);
-    
-    return new Promise((resolve) => {
-      // THE FIX: Break the static analyzer's pattern matching for Python too
-      const runProcess = spawn;
-      const args = ['-u'];
-      args.push(tempFile);
+    if (statusId <= 2) continue; // 1=In Queue, 2=Processing — keep waiting
 
-      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-      const python = runProcess(pythonCmd, args, {
-        timeout: EXECUTION_TIMEOUT,
-        killSignal: 'SIGKILL'
-      });
-
-      let output = '';
-      let errorOutput = '';
-
-      python.stdout.on('data', (data) => {
-        output += data.toString();
-      });
-
-      python.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      python.on('close', async (code) => {
-        await unlink(tempFile).catch(() => {});
-        
-        if (code === 0) {
-          resolve({ success: true, output: output.trim() });
-        } else {
-          resolve({ success: false, error: errorOutput.trim() });
-        }
-      });
-
-      python.on('error', async (error) => {
-        await unlink(tempFile).catch(() => {});
-        if (error.code === 'ENOENT') {
-          resolve({ 
-            success: false, 
-            error: 'Python is not installed. Download from https://www.python.org/downloads/ and check "Add to PATH" during installation.'
-          });
-        } else {
-          resolve({ success: false, error: `Execution Error: ${error.message}` });
-        }
-      });
-
-      setTimeout(() => {
-        python.kill('SIGKILL');
-        unlink(tempFile).catch(() => {});
-        resolve({ success: false, error: 'Time Limit Exceeded (5 seconds)' });
-      }, EXECUTION_TIMEOUT);
-    });
-  } catch (error) {
-    await unlink(tempFile).catch(() => {});
-    throw error;
+    return data;
   }
+
+  throw new Error('Timed out waiting for Judge0');
+}
+
+function parseResult(result) {
+  const statusId = result.status?.id;
+
+  if (statusId === 3) {
+    // Accepted
+    return { success: true, output: result.stdout?.trim() || '' };
+  }
+
+  if (statusId === 5) {
+    return { success: false, error: 'Time Limit Exceeded (5 seconds)' };
+  }
+
+  if (statusId === 6) {
+    return {
+      success: false,
+      error: `Compilation Error:\n${result.compile_output?.trim() || 'Unknown compilation error'}`,
+    };
+  }
+
+  if (statusId >= 7 && statusId <= 12) {
+    return {
+      success: false,
+      error: `Runtime Error:\n${result.stderr?.trim() || result.stdout?.trim() || 'No output'}`,
+    };
+  }
+
+  // Anything else — return whatever output exists
+  return {
+    success: true,
+    output: result.stdout?.trim() || result.stderr?.trim() || `Status: ${result.status?.description}`,
+  };
 }
 
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { code, language, input = '' } = body;
+    const { code, language, input = '' } = await request.json();
 
     if (!code || !language) {
+      return NextResponse.json({ error: 'Code and language are required' }, { status: 400 });
+    }
+
+    if (code.trim().length === 0) {
+      return NextResponse.json({ output: '', status: 'Error', error: 'Code cannot be empty' });
+    }
+
+    const languageId = LANGUAGE_IDS[language.toLowerCase()];
+    if (!languageId) {
       return NextResponse.json(
-        { error: 'Code and language are required' },
+        { error: 'Unsupported language. Use "javascript" or "python"' },
         { status: 400 }
       );
     }
 
-    // Validate code is not empty
-    if (code.trim().length === 0) {
-      return NextResponse.json({
-        output: '',
-        status: 'Error',
-        error: 'Code cannot be empty'
-      });
-    }
+    const token  = await submitCode(code, languageId, input);
+    const result = await pollResult(token);
+    const parsed = parseResult(result);
 
-    let result;
-
-    switch (language.toLowerCase()) {
-      case 'javascript':
-      case 'js':
-        result = await executeJavaScript(code, input);
-        break;
-      case 'python':
-      case 'py':
-        result = await executePython(code, input);
-        break;
-      default:
-        return NextResponse.json(
-          { error: 'Unsupported language. Use "javascript" or "python"' },
-          { status: 400 }
-        );
-    }
-
-    if (result.success) {
-      return NextResponse.json({
-        output: result.output,
-        status: 'Success'
-      });
-    } else {
-      return NextResponse.json({
-        output: result.error,
-        status: 'Error'
-      });
-    }
+    return NextResponse.json({
+      output: parsed.success ? parsed.output : parsed.error,
+      status: parsed.success ? 'Success' : 'Error',
+    });
 
   } catch (error) {
-    console.error('Execution error:', error);
-    
-    return NextResponse.json({
-      output: `Server Error: ${error.message}`,
-      status: 'Error'
-    }, { status: 500 });
+    console.error('Execute route error:', error);
+    return NextResponse.json(
+      { output: `Server Error: ${error.message}`, status: 'Error' },
+      { status: 500 }
+    );
   }
 }
