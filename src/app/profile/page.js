@@ -92,6 +92,8 @@ export default function ProfilePage() {
           </ul>
         </main>
 
+
+
         <aside style={{ background: 'var(--card-background)', color: 'var(--card-foreground)', padding: '1rem', borderRadius: 8 }}>
           <h3 style={{ marginTop: 0 }}>Stats</h3>
           <div style={{ display: 'grid', gap: 8 }}>
