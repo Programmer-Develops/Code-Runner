@@ -1,9 +1,8 @@
-<<<<<<< HEAD
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -12,7 +11,6 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -33,7 +31,6 @@ export default function ProfilePage() {
     fetchProfile();
   }, [session]);
 
-  /* ── LOADING SKELETON ── */
   if (status === 'loading') {
     return (
       <div style={S.page}>
@@ -85,7 +82,6 @@ export default function ProfilePage() {
     );
   }
 
-  /* ── NOT SIGNED IN ── */
   if (status === 'unauthenticated') {
     return (
       <div style={S.page}>
@@ -113,19 +109,15 @@ export default function ProfilePage() {
   const totalAttempts = profile?.stats?.totalAttempts ?? 0;
   const successRate = attempted > 0 ? Math.round((solved / attempted) * 100) : 0;
 
-  /* ── AUTHENTICATED PROFILE ── */
   return (
     <div style={S.page}>
       <GridOverlay /><Orbs />
 
-      {/* NAV */}
       <Nav session={session} xp={xp} />
 
       <main style={S.main}>
 
-        {/* PROFILE HEADER */}
         <div style={S.profileHeader}>
-          {/* Avatar */}
           <div style={{ position:'relative', flexShrink:0 }}>
             <div style={{ width:96, height:96, borderRadius:12, overflow:'hidden', background:'#0d1220', border:'1px solid rgba(255,255,255,0.1)', position:'relative' }}>
               {session.user.image
@@ -133,11 +125,9 @@ export default function ProfilePage() {
                 : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36 }}>👤</div>
               }
             </div>
-            {/* Online dot */}
             <div style={{ position:'absolute', bottom:4, right:4, width:12, height:12, borderRadius:'50%', background:'#00ff94', border:'2px solid #050810', boxShadow:'0 0 8px #00ff94' }} />
           </div>
 
-          {/* Info */}
           <div style={{ flex:1 }}>
             <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:4, flexWrap:'wrap' }}>
               <h1 style={{ margin:0, fontSize:28, fontWeight:800, letterSpacing:-1 }}>{session.user.name}</h1>
@@ -145,7 +135,6 @@ export default function ProfilePage() {
             </div>
             <p style={{ margin:0, fontFamily:"'Space Mono',monospace", fontSize:11, color:'#5a6070', marginBottom:14 }}>{session.user.email}</p>
 
-            {/* XP + quick stats row */}
             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
               <span style={{ fontFamily:"'Space Mono',monospace", fontSize:12, padding:'5px 14px', background:'rgba(255,184,0,0.1)', border:'1px solid rgba(255,184,0,0.25)', borderRadius:20, color:'#ffb800' }}>⚡ {xp} XP</span>
               <span style={{ fontFamily:"'Space Mono',monospace", fontSize:12, padding:'5px 14px', background:'rgba(0,255,148,0.07)', border:'1px solid rgba(0,255,148,0.2)', borderRadius:20, color:'#00ff94' }}>✓ {solved} solved</span>
@@ -153,24 +142,21 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Back button */}
-          <button
-            onClick={() => router.push('/')}
-            style={S.backBtn}
-            onMouseEnter={e => { e.currentTarget.style.borderColor='#00e5ff'; e.currentTarget.style.color='#00e5ff'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#5a6070'; }}
-          >
-            ← home
-          </button>
+          <Link href="/" style={{ textDecoration:'none' }}>
+            <button
+              style={S.backBtn}
+              onMouseEnter={e => { e.currentTarget.style.borderColor='#00e5ff'; e.currentTarget.style.color='#00e5ff'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#5a6070'; }}
+            >
+              ← home
+            </button>
+          </Link>
         </div>
 
-        {/* DIVIDER */}
         <div style={{ height:1, background:'linear-gradient(90deg,rgba(0,229,255,0.3),rgba(0,229,255,0.05),transparent)', margin:'28px 0' }} />
 
-        {/* CONTENT GRID */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:20, alignItems:'start' }}>
 
-          {/* LEFT — Activity */}
           <div style={S.card}>
             <div style={S.cardHeader}>
               <span style={S.cardTitle}>Recent Activity</span>
@@ -236,10 +222,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* RIGHT — Stats + Badges */}
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
 
-            {/* Stats */}
             <div style={S.card}>
               <div style={S.cardHeader}>
                 <span style={S.cardTitle}>Stats</span>
@@ -260,7 +244,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* XP Bar visual */}
             <div style={S.card}>
               <div style={S.cardHeader}>
                 <span style={S.cardTitle}>XP Progress</span>
@@ -288,7 +271,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Badges */}
             <div style={S.card}>
               <div style={S.cardHeader}>
                 <span style={S.cardTitle}>Badges</span>
@@ -328,8 +310,6 @@ export default function ProfilePage() {
   );
 }
 
-/* ── SUB COMPONENTS ── */
-
 function Nav({ skeleton, session, xp }) {
   return (
     <nav style={S.nav}>
@@ -344,7 +324,7 @@ function Nav({ skeleton, session, xp }) {
           </div>
         : <div style={{ display:'flex', alignItems:'center', gap:12 }}>
             <span style={S.xpPill}>⚡ {xp} XP</span>
-            <Link href="/" style={{ textDecoration: 'none' }}>
+            <Link href="/" style={{ textDecoration:'none' }}>
               <div style={{ width:38, height:38, borderRadius:'50%', background:'linear-gradient(135deg,#00e5ff,#00ff94)', padding:2 }}>
                 <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:'#090d1a', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   {session?.user?.image
@@ -360,20 +340,6 @@ function Nav({ skeleton, session, xp }) {
   );
 }
 
-<<<<<<< HEAD
-const buttonStyle ={
-    padding: '0.5rem 0.9rem',
-    background: '#0070f3',
-    color:'#fff',
-    border: 'none',
-    borderRadius:6,
-    cursur:"pointer",
-    fontSize:'1rem',
-    // borderRadius:6,
-    // cursur:"pointer"
-    // color: '#fff',
-};
-=======
 function GridOverlay() {
   return (
     <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0,
@@ -381,7 +347,6 @@ function GridOverlay() {
       backgroundSize:'60px 60px' }} />
   );
 }
->>>>>>> 15103668fc0f30d62dc64d1073c0ea539e4e165d
 
 function Orbs() {
   return (
@@ -392,7 +357,6 @@ function Orbs() {
   );
 }
 
-/* ── STYLES ── */
 const S = {
   page: {
     minHeight:'100vh', background:'#050810', color:'#e8eaf0',
@@ -475,6 +439,3 @@ const fonts = `
 `;
 
 const extra = ``;
-=======
-    
->>>>>>> fd487cc7502e63d8cdf2cb2898e69892a12e1909
