@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -474,3 +475,6 @@ const fonts = `
 `;
 
 const extra = ``;
+=======
+    
+>>>>>>> fd487cc7502e63d8cdf2cb2898e69892a12e1909
