@@ -102,21 +102,21 @@ export default function Home() {
   // ── LOADING ────────────────────────────────────
   if (status === "loading") {
     return (
-      <div style={pg}>
+      <div className="page">
         <Mesh /><Noise />
         <NavBar skeleton />
-        <main style={mainStyle}>
-          <div style={{ ...heroWrap, borderBottom:`1px solid ${T.border}`, marginBottom:56 }}>
-            <div style={{ flex:1 }}>
-              {[200,280,180].map((w,i) => <div key={i} style={{ ...sk, width:w, height: i===1?60:14, borderRadius:6, marginBottom:16 }} />)}
+        <main className="main">
+          <div className="hero-section" style={{ marginBottom:56 }}>
+            <div className="flex-1">
+              {[200,280,180].map((w,i) => <div key={i} className="skeleton" style={{ width:w, height: i===1?60:14, borderRadius:6, marginBottom:16 }} />)}
             </div>
-            <div style={{ display:"flex", gap:12 }}>
-              {[1,2].map(i => <div key={i} style={{ ...sk, width:120, height:80, borderRadius:12 }} />)}
+            <div className="flex gap-3">
+              {[1,2].map(i => <div key={i} className="skeleton" style={{ width:120, height:80, borderRadius:12 }} />)}
             </div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 400px", gap:24 }}>
-            <div style={{ ...sk, height:380, borderRadius:20 }} />
-            <div style={{ ...sk, height:520, borderRadius:20 }} />
+          <div className="content-grid">
+            <div className="skeleton" style={{ height:380, borderRadius:20 }} />
+            <div className="skeleton" style={{ height:520, borderRadius:20 }} />
           </div>
         </main>
         <Fonts />
@@ -127,50 +127,37 @@ export default function Home() {
   // ── SIGN IN ─────────────────────────────────────
   if (status === "unauthenticated") {
     return (
-      <div style={pg}>
+      <div className="page">
         <Mesh /><Noise />
-        <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", zIndex:1 }}>
-          <div style={{
-            width:"100%", maxWidth:440, padding:"60px 52px",
-            background: T.surface,
-            border: `1px solid ${T.borderHi}`,
-            borderRadius:24, textAlign:"center", position:"relative",
-          }}>
-            {/* Top shimmer */}
-            <div style={{ position:"absolute", top:0, left:"10%", right:"10%", height:1, background:`linear-gradient(90deg,transparent,${T.accent},transparent)` }} />
+        <div className="signin-wrap">
+          <div className="signin-card">
+            <div className="signin-glow" />
 
-            <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"5px 14px", borderRadius:20, background:T.accentLo, border:`1px solid ${T.accentGlow}`, marginBottom:28 }}>
-              <span style={{ width:6, height:6, borderRadius:"50%", background:T.accent, boxShadow:`0 0 8px ${T.accent}`, display:"inline-block" }} />
-              <span style={{ fontFamily:T.mono, fontSize:11, color:T.accentHi, letterSpacing:1 }}>CODE RUNNER</span>
+            <div className="signin-logo">
+              <span className="nav-logo-dot" />
+              <span className="text-mono text-xs text-accent-hi" style={{ letterSpacing:1 }}>CODE RUNNER</span>
             </div>
 
-            <h1 style={{ fontSize:42, fontWeight:800, letterSpacing:-2, lineHeight:1, marginBottom:12, fontFamily:T.display }}>
-              Ship code.<br /><span style={{ color:T.accent }}>Earn glory.</span>
+            <h1 className="signin-title">
+              Ship code.<br /><span className="text-accent">Earn glory.</span>
             </h1>
-            <p style={{ fontSize:15, color:T.muted, marginBottom:40, lineHeight:1.7 }}>
+            <p className="signin-sub">
               AI-generated challenges, real-time rankings, infinite problems.
             </p>
 
             <button
-              style={{
-                width:"100%", padding:"15px 20px",
-                background:"transparent",
-                border:`1px solid ${T.borderHi}`,
-                borderRadius:12, color:T.text,
-                fontFamily:T.display, fontSize:15, fontWeight:600,
-                cursor:"pointer",
-                display:"flex", alignItems:"center", justifyContent:"center", gap:12,
-                transition:"all 0.2s",
-              }}
+              className="signin-btn"
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.background = T.accentLo; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.borderHi; e.currentTarget.style.background = "transparent"; }}
               onClick={() => { Toast.fire({ icon:"success", title:"Signing in..." }); signIn("google"); }}
             >
-              <span style={{ width:20, height:20, background:"white", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:"#4285f4", flexShrink:0 }}>G</span>
+              <span className="google-icon">G</span>
               Continue with Google
             </button>
 
-            <p style={{ marginTop:20, fontFamily:T.mono, fontSize:11, color:T.muted2 }}>Progress saved automatically</p>
+            <p className="signin-footer">
+              Progress saved automatically
+            </p>
           </div>
         </div>
         <Fonts />
@@ -185,116 +172,92 @@ export default function Home() {
   const maxXp     = leaderboard[0]?.xp || 1;
 
   return (
-    <div style={pg}>
+    <div className="page">
       <Mesh /><Noise />
 
       {/* ── NAV ── */}
       <NavBar session={session} userXp={userXp} signOut={signOut} xpAnim={xpAnim} />
 
-      <main style={mainStyle}>
+      <main className="main">
 
         {/* ── HERO ── */}
-        <section style={heroWrap}>
-          <div style={{ flex:1 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"4px 12px", borderRadius:20, background:T.accentLo, border:`1px solid rgba(124,58,237,0.25)`, marginBottom:20 }}>
-              <span style={{ width:5, height:5, borderRadius:"50%", background:T.green, boxShadow:`0 0 6px ${T.green}`, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
-              <span style={{ fontFamily:T.mono, fontSize:10, color:T.accentHi, letterSpacing:1.5, textTransform:"uppercase" }}>AI-Powered · Always Unique</span>
+        <section className="hero-section">
+          <div className="hero-content" style={{ textAlign: "left" }}>
+            <div className="eyebrow">
+              <span className="eyebrow-dot" />
+              <span className="text-mono text-xs" style={{ letterSpacing:1.5, textTransform:"uppercase" }}>AI-Powered · Always Unique</span>
             </div>
 
-            <h1 style={{ fontSize:"clamp(48px,6vw,88px)", fontWeight:800, lineHeight:0.92, letterSpacing:-3, marginBottom:20, fontFamily:T.display }}>
-              <span style={{ display:"block", color:T.text }}>Code.</span>
-              <span style={{ display:"block", background:`linear-gradient(135deg, ${T.accent}, ${T.accentHi})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Compete.</span>
-              <span style={{ display:"block", color:"transparent", WebkitTextStroke:`1px ${T.muted2}` }}>Conquer.</span>
+            <h1 className="hero-title">
+              <span style={{ display: "block" }}>Code.</span>
+              <span style={{ display: "block", background:`linear-gradient(135deg, ${T.accent}, ${T.accentHi})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Compete.</span>
+              <span style={{ display: "block", color:"transparent", WebkitTextStroke:`1px ${T.muted2}` }}>Conquer.</span>
             </h1>
-            <p style={{ fontSize:16, color:T.muted, lineHeight:1.75, maxWidth:400, fontFamily:T.display, fontWeight:400 }}>
+            <p className="hero-desc">
               Infinite AI-generated problems. Every challenge is unique. Climb the global rankings.
             </p>
           </div>
 
           {/* Hero stat cards */}
-          <div style={{ display:"flex", gap:12, alignItems:"stretch" }}>
+          <div className="hero-stats">
             {[
               { label:"Your XP",  val: userXp,                              color: T.amber,  icon:"⚡" },
               { label:"Rank",     val: userRank > 0 ? `#${userRank}` : "—", color: T.accent, icon:"🏆" },
             ].map(({ label, val, color, icon }) => (
-              <div key={label} style={{
-                padding:"20px 24px", background:T.surface,
-                border:`1px solid ${T.border}`, borderRadius:16,
-                minWidth:120, textAlign:"center",
-                position:"relative", overflow:"hidden",
-              }}>
-                <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${color},transparent)` }} />
-                <div style={{ fontSize:22, marginBottom:6 }}>{icon}</div>
-                <div style={{ fontFamily:T.mono, fontSize:22, fontWeight:700, color, marginBottom:4, letterSpacing:-1 }}>{val}</div>
-                <div style={{ fontFamily:T.mono, fontSize:10, color:T.muted, textTransform:"uppercase", letterSpacing:1 }}>{label}</div>
+              <div key={label} className="stat-card">
+                <div className="stat-card-top" style={{ background:`linear-gradient(90deg,transparent,${color},transparent)` }} />
+                <div className="stat-card-icon">{icon}</div>
+                <div className="stat-card-value" style={{ color }}>{val}</div>
+                <div className="stat-card-label">{label}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* ── DIVIDER ── */}
-        <div style={{ height:1, background:`linear-gradient(90deg, ${T.accent}55, ${T.accentHi}22, transparent)`, margin:"0 0 40px" }} />
+        <div className="section-divider" />
 
         {/* ── MAIN GRID ── */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 400px", gap:24, alignItems:"start" }}>
+        <div className="content-grid">
 
           {/* ══════════════════════════════
               CHALLENGE CARD
           ══════════════════════════════ */}
-          <div style={{
-            background: T.surface,
-            border: `1px solid ${T.border}`,
-            borderRadius: 20,
-            overflow: "hidden",
-            position: "relative",
-          }}>
+          <div className="challenge-card" style={{ marginBottom: 40 }}>
             {/* Ambient glow reacting to difficulty */}
-            <div style={{
-              position:"absolute", top:0, left:0, right:0, height:280,
-              background:`radial-gradient(ellipse at 30% 0%, ${activeDiff.lo} 0%, transparent 65%)`,
-              transition:"background 0.5s", pointerEvents:"none",
-            }} />
+            <div className="challenge-glow" />
 
             {/* Color stripe top */}
-            <div style={{ height:3, background:`linear-gradient(90deg, ${activeDiff.color}, ${T.accent})`, transition:"background 0.5s" }} />
+            <div className="challenge-stripe" />
 
             {/* Card top bar */}
-            <div style={{ padding:"18px 24px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", position:"relative" }}>
-              <span style={{ fontFamily:T.mono, fontSize:11, color:T.muted, textTransform:"uppercase", letterSpacing:2 }}>New Challenge</span>
-              <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:20, background:T.greenLo, border:`1px solid rgba(16,185,129,0.25)` }}>
+            <div className="card-header">
+              <span className="card-title">New Challenge</span>
+              <div className="badge badge-live">
                 <span style={{ width:5, height:5, borderRadius:"50%", background:T.green, boxShadow:`0 0 6px ${T.green}`, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
-                <span style={{ fontFamily:T.mono, fontSize:10, color:T.green }}>AI Ready</span>
+                <span className="text-mono text-xs">AI Ready</span>
               </div>
             </div>
 
-            <div style={{ padding:"28px 24px", position:"relative" }}>
+            <div className="challenge-content">
 
               {/* DIFFICULTY */}
-              <div style={{ marginBottom:28 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted, textTransform:"uppercase", letterSpacing:2 }}>Difficulty</span>
-                  <span style={{ fontFamily:T.mono, fontSize:11, color:activeDiff.color, transition:"color 0.4s" }}>
+              <div className="difficulty-section">
+                <div className="flex justify-between items-center" style={{ marginBottom:12 }}>
+                  <span className="field-label">Difficulty</span>
+                  <span className="text-mono text-sm" style={{ color: activeDiff.color, transition:"color 0.4s" }}>
                     +{activeDiff.xp} XP on solve
                   </span>
                 </div>
 
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+                <div className="difficulty-grid">
                   {Object.entries(DIFF).map(([key, cfg]) => {
                     const active = difficulty === key;
                     return (
-                      <button key={key} onClick={() => setDifficulty(key)} style={{
-                        padding:"16px 8px", borderRadius:12,
-                        cursor:"pointer", textAlign:"center",
-                        transition:"all 0.25s",
-                        border: `1px solid ${active ? cfg.border : T.border}`,
-                        background: active ? cfg.lo : "rgba(255,255,255,0.02)",
-                        boxShadow: active ? `0 0 24px ${cfg.lo}, inset 0 1px 0 rgba(255,255,255,0.06)` : "none",
-                        transform: active ? "translateY(-2px)" : "none",
-                        position:"relative", overflow:"hidden",
-                      }}>
-                        {active && <div style={{ position:"absolute", bottom:0, left:"15%", right:"15%", height:2, background:cfg.color, borderRadius:2, boxShadow:`0 0 10px ${cfg.color}` }} />}
-                        <div style={{ fontFamily:T.display, fontSize:13, fontWeight:700, color: active ? cfg.color : T.muted, marginBottom:3, transition:"color 0.2s" }}>{key}</div>
-                        <div style={{ fontFamily:T.mono, fontSize:10, color: active ? cfg.color : T.muted2, opacity: active?0.8:1, transition:"all 0.2s" }}>{cfg.xp} XP</div>
+                      <button key={key} onClick={() => setDifficulty(key)} className={`difficulty-btn ${active ? 'active' : ''}`}>
+                        {active && <div className="difficulty-active-bar" style={{ background:cfg.color, boxShadow:`0 0 10px ${cfg.color}` }} />}
+                        <div className="difficulty-name" style={{ color: active ? cfg.color : T.muted, transition:"color 0.2s" }}>{key}</div>
+                        <div className="difficulty-xp" style={{ color: active ? cfg.color : T.muted2, opacity: active?0.8:1, transition:"all 0.2s" }}>{cfg.xp} XP</div>
                       </button>
                     );
                   })}
@@ -302,25 +265,17 @@ export default function Home() {
               </div>
 
               {/* LANGUAGE */}
-              <div style={{ marginBottom:28 }}>
-                <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted, textTransform:"uppercase", letterSpacing:2, marginBottom:12, display:"block" }}>Language</span>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div className="language-section">
+                <span className="field-label">Language</span>
+                <div className="language-grid">
                   {Object.entries(LANG).map(([key, cfg]) => {
                     const active = language === key;
                     return (
-                      <button key={key} onClick={() => setLanguage(key)} style={{
-                        padding:"16px", borderRadius:12,
-                        background: active ? T.accentLo : "rgba(255,255,255,0.02)",
-                        border: `1px solid ${active ? T.accent : T.border}`,
-                        cursor:"pointer", display:"flex", alignItems:"center", gap:12,
-                        transition:"all 0.2s",
-                        boxShadow: active ? `0 0 20px ${T.accentLo}` : "none",
-                        transform: active ? "translateY(-1px)" : "none",
-                      }}>
-                        <span style={{ fontSize:24, lineHeight:1, filter: active ? "none" : "grayscale(0.3)" }}>{cfg.emoji}</span>
-                        <span style={{ textAlign:"left" }}>
-                          <span style={{ display:"block", fontFamily:T.display, fontSize:13, fontWeight:700, color: active ? T.accentHi : T.text, transition:"color 0.2s" }}>{cfg.name}</span>
-                          <span style={{ fontFamily:T.mono, fontSize:9, color: active ? T.accent : T.muted, marginTop:2, display:"block" }}>{cfg.sub}</span>
+                      <button key={key} onClick={() => setLanguage(key)} className={`language-btn ${active ? 'active' : ''}`}>
+                        <span className="language-emoji" style={{ filter: active ? "none" : "grayscale(0.3)" }}>{cfg.emoji}</span>
+                        <span>
+                          <span className="language-name" style={{ color: active ? T.accentHi : T.text, transition:"color 0.2s" }}>{cfg.name}</span>
+                          <span className="language-sub" style={{ color: active ? T.accent : T.muted, marginTop:2, display:"block" }}>{cfg.sub}</span>
                         </span>
                       </button>
                     );
@@ -332,21 +287,7 @@ export default function Home() {
               <button
                 onClick={startChallenge}
                 disabled={starting}
-                style={{
-                  width:"100%", padding:"18px",
-                  background: starting
-                    ? "transparent"
-                    : `linear-gradient(135deg, ${T.accent}, #6d28d9)`,
-                  color: starting ? T.accent : "#fff",
-                  border: starting ? `1px solid ${T.accent}` : "none",
-                  borderRadius:12,
-                  fontFamily:T.display, fontSize:15, fontWeight:700,
-                  cursor: starting ? "not-allowed" : "pointer",
-                  transition:"all 0.25s",
-                  display:"flex", alignItems:"center", justifyContent:"center", gap:10,
-                  boxShadow: starting ? "none" : `0 0 40px ${T.accentLo}, 0 4px 20px rgba(124,58,237,0.4)`,
-                  letterSpacing:0.5,
-                }}
+                className={`start-btn ${starting ? 'disabled' : ''}`}
                 onMouseEnter={e => { if(!starting){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow=`0 0 60px ${T.accentGlow}, 0 8px 30px rgba(124,58,237,0.5)`; }}}
                 onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow=starting?"none":`0 0 40px ${T.accentLo}, 0 4px 20px rgba(124,58,237,0.4)`; }}
               >
@@ -357,7 +298,7 @@ export default function Home() {
               </button>
 
               {/* Reassurance line */}
-              <p style={{ textAlign:"center", fontFamily:T.mono, fontSize:10, color:T.muted2, marginTop:10 }}>
+              <p className="challenge-reassurance">
                 AI generates a unique problem every time
               </p>
             </div>
@@ -366,28 +307,21 @@ export default function Home() {
           {/* ══════════════════════════════
               LEADERBOARD
           ══════════════════════════════ */}
-          <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:20, overflow:"hidden", position:"sticky", top:80 }}>
+          <div className="leaderboard-card" style={{ marginBottom: 40 }}>
 
             {/* Amber top stripe */}
-            <div style={{ height:3, background:`linear-gradient(90deg, ${T.amber}, ${T.accent})` }} />
+            <div className="leaderboard-stripe" />
 
             {/* Tab bar */}
-            <div style={{ padding:"16px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-              <div style={{ display:"flex", gap:4, background:T.surface2, borderRadius:10, padding:3 }}>
+            <div className="tab-bar">
+              <div className="tab-buttons">
                 {[["board","Rankings"],["feed","Live Feed"]].map(([id,label]) => (
-                  <button key={id} onClick={() => setLbTab(id)} style={{
-                    padding:"6px 14px", borderRadius:8,
-                    background: lbTab===id ? T.accent : "transparent",
-                    border:"none", color: lbTab===id ? "#fff" : T.muted,
-                    fontFamily:T.mono, fontSize:10, cursor:"pointer",
-                    transition:"all 0.2s", fontWeight: lbTab===id ? 700 : 400,
-                    letterSpacing:0.5,
-                  }}>{label}</button>
+                  <button key={id} onClick={() => setLbTab(id)} className={`tab-btn ${lbTab===id ? 'active' : ''}`}>{label}</button>
                 ))}
               </div>
-              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <span style={{ width:5, height:5, borderRadius:"50%", background:T.green, boxShadow:`0 0 6px ${T.green}`, display:"inline-block", animation:"blink 1.5s ease-in-out infinite" }} />
-                <span style={{ fontFamily:T.mono, fontSize:10, color:T.green }}>live</span>
+              <div className="live-indicator">
+                <span className="live-dot" />
+                <span className="live-text">live</span>
               </div>
             </div>
 
@@ -396,8 +330,8 @@ export default function Home() {
               <div>
                 {/* Top 3 Podium */}
                 {leaderboard.length >= 3 && (
-                  <div style={{ padding:"20px 16px 0", borderBottom:`1px solid ${T.border}` }}>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1.25fr 1fr", gap:8, alignItems:"flex-end" }}>
+                  <div className="podium">
+                    <div className="podium-grid">
                       {[1,0,2].map((rankIdx, colIdx) => {
                         const u = leaderboard[rankIdx];
                         if (!u) return <div key={colIdx} />;
@@ -408,20 +342,20 @@ export default function Home() {
                           { size:36, barH:24, medal:"🥉", color:"#b45309", label:null },
                         ][colIdx];
                         return (
-                          <div key={colIdx} style={{ textAlign:"center" }}>
-                            {cfg.label && <div style={{ fontFamily:T.mono, fontSize:9, color:cfg.color, letterSpacing:2, textTransform:"uppercase", marginBottom:6 }}>{cfg.label}</div>}
-                            <div style={{ width:cfg.size, height:cfg.size, borderRadius:"50%", overflow:"hidden", margin:"0 auto 6px", border:`2px solid ${cfg.color}`, boxShadow:`0 0 16px ${cfg.color}55` }}>
+                          <div key={colIdx} className="podium-item">
+                            {cfg.label && <div className="text-mono text-xs" style={{ color:cfg.color, letterSpacing:2, textTransform:"uppercase", marginBottom:6 }}>{cfg.label}</div>}
+                            <div className="podium-avatar" style={{ width:cfg.size, height:cfg.size, borderColor:cfg.color, boxShadow:`0 0 16px ${cfg.color}55` }}>
                               {u.image
                                 ? <Image src={u.image} alt={u.name} width={cfg.size} height={cfg.size} style={{ objectFit:"cover" }} />
                                 : <div style={{ width:"100%", height:"100%", background:T.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:T.display, fontWeight:700, color:T.text, fontSize:cfg.size*0.36 }}>{u.name?.[0]}</div>
                               }
                             </div>
                             <div style={{ fontSize: colIdx===1?18:15, marginBottom:3 }}>{cfg.medal}</div>
-                            <div style={{ fontFamily:T.display, fontSize:12, fontWeight:700, color: isMe ? T.accentHi : colIdx===1 ? T.amber : T.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"100%" }}>
+                            <div className={`podium-name ${colIdx===1 ? 'gold' : colIdx===0 ? 'silver' : 'bronze'}`}>
                               {isMe ? "You" : u.name?.split(" ")[0]}
                             </div>
-                            <div style={{ fontFamily:T.mono, fontSize:10, color:T.amber, marginTop:2 }}>{u.xp} XP</div>
-                            <div style={{ height:cfg.barH, background:`${cfg.color}12`, borderTop:`1px solid ${cfg.color}30`, borderRadius:"4px 4px 0 0", marginTop:8 }} />
+                            <div className="podium-xp">{u.xp} XP</div>
+                            <div className={`podium-bar ${colIdx===1 ? 'gold' : colIdx===0 ? 'silver' : 'bronze'}`} style={{ height:cfg.barH }} />
                           </div>
                         );
                       })}
@@ -436,30 +370,25 @@ export default function Home() {
                     const isMe = user.email === session.user.email;
                     const pct = Math.round((user.xp / maxXp) * 100);
                     return (
-                      <div key={user._id || i} style={{
-                        padding:"10px 18px",
-                        display:"flex", alignItems:"center", gap:10,
-                        borderBottom:`1px solid ${T.border}`,
-                        background: isMe ? `${T.accent}0d` : "transparent",
-                        borderLeft: isMe ? `2px solid ${T.accent}` : "2px solid transparent",
-                        position:"relative", transition:"background 0.15s",
-                      }}>
+                      <div key={user._id || i} className={`rank-item ${isMe ? 'me' : ''}`}>
                         {/* XP bar fill */}
-                        <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${pct*0.55}%`, background: isMe?`${T.accent}08`:`rgba(255,255,255,0.012)`, pointerEvents:"none" }} />
+                        <div className={`rank-xp-bar ${isMe ? 'me' : ''}`} style={{ width:`${pct*0.55}%` }}>
+                          <div className="rank-xp-fill" style={{ width:`${Math.min(100, (user.xp / (user.xp + 100)) * 100)}%` }}></div>
+                        </div>
 
-                        <span style={{ fontFamily:T.mono, fontSize:10, width:16, textAlign:"center", color:T.muted2, flexShrink:0 }}>{i+1}</span>
+                        <span className="rank-number">{i+1}</span>
 
-                        <div style={{ width:26, height:26, borderRadius:"50%", overflow:"hidden", flexShrink:0, background:T.surface2, border:`1px solid ${isMe ? T.accent+"55" : T.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div className="rank-avatar">
                           {user.image
                             ? <Image src={user.image} alt={user.name} width={26} height={26} style={{ objectFit:"cover" }} />
-                            : <span style={{ fontFamily:T.display, fontSize:10, fontWeight:700, color:T.text }}>{user.name?.[0]}</span>
+                            : <span className="text-display font-bold text-xs" style={{ color:T.text }}>{user.name?.[0]}</span>
                           }
                         </div>
 
-                        <span style={{ flex:1, fontFamily:T.display, fontSize:13, fontWeight:500, color: isMe ? T.accentHi : T.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                        <span className={`rank-name ${isMe ? 'me' : ''}`}>
                           {isMe ? "You ←" : user.name?.split(" ")[0]}
                         </span>
-                        <span style={{ fontFamily:T.mono, fontSize:10, color:T.amber, flexShrink:0 }}>{user.xp}</span>
+                        <span className="rank-xp">{user.xp}</span>
                       </div>
                     );
                   })}
@@ -473,20 +402,20 @@ export default function Home() {
 
                 {/* Your position if outside top 10 */}
                 {userRank > 10 && (
-                  <div style={{ padding:"10px 18px", borderTop:`1px solid ${T.border}`, background:`${T.accent}0d`, display:"flex", alignItems:"center", gap:10 }}>
-                    <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2, width:16 }}>#{userRank}</span>
-                    <div style={{ width:26, height:26, borderRadius:"50%", overflow:"hidden", background:T.surface2, border:`1px solid ${T.accent}55`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {session.user.image ? <Image src={session.user.image} alt="you" width={26} height={26} style={{ objectFit:"cover" }} /> : <span style={{ fontFamily:T.display, fontSize:10, fontWeight:700, color:T.accentHi }}>{session.user.name?.[0]}</span>}
+                  <div className="user-rank-outside">
+                    <span className="rank-number">#{userRank}</span>
+                    <div className="rank-avatar">
+                      {session.user.image ? <Image src={session.user.image} alt="you" width={26} height={26} style={{ objectFit:"cover" }} /> : <span className="text-display font-bold text-xs" style={{ color:T.accentHi }}>{session.user.name?.[0]}</span>}
                     </div>
-                    <span style={{ flex:1, fontFamily:T.display, fontSize:13, fontWeight:600, color:T.accentHi }}>You</span>
-                    <span style={{ fontFamily:T.mono, fontSize:10, color:T.amber }}>{userXp}</span>
+                    <span className="rank-name me">You</span>
+                    <span className="rank-xp">{userXp}</span>
                   </div>
                 )}
 
                 {/* Footer */}
-                <div style={{ padding:"12px 18px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>{leaderboard.length} coders globally</span>
-                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>updates live</span>
+                <div className="leaderboard-footer">
+                  <span className="text-mono text-xs" style={{ color:T.muted2 }}>{leaderboard.length} coders globally</span>
+                  <span className="text-mono text-xs" style={{ color:T.muted2 }}>updates live</span>
                 </div>
               </div>
             )}
@@ -494,41 +423,29 @@ export default function Home() {
             {/* ── LIVE FEED TAB ── */}
             {lbTab === "feed" && (
               <div>
-                <div style={{ padding:"8px 0" }}>
+                <div className="live-feed-container">
                   {liveEvents.map((ev, i) => (
-                    <div key={i} style={{
-                      padding:"12px 18px",
-                      borderBottom:`1px solid ${T.border}`,
-                      display:"flex", alignItems:"flex-start", gap:12,
-                      transition:"background 0.15s",
-                    }}>
-                      <div style={{
-                        width:32, height:32, borderRadius:"50%", flexShrink:0,
-                        background: ev.type==="solve"
-                          ? DIFF[ev.diff]?.lo || T.accentLo
-                          : ev.type==="rank" ? T.accentLo : T.surface2,
-                        display:"flex", alignItems:"center", justifyContent:"center",
-                        fontSize:14,
-                      }}>
+                    <div key={i} className="live-feed-item">
+                      <div className={`live-feed-icon ${ev.type}`}>
                         {ev.type==="solve" ? "⚡" : ev.type==="rank" ? "📈" : "ℹ️"}
                       </div>
-                      <div style={{ flex:1 }}>
+                      <div className="live-feed-content">
                         {ev.type === "info" ? (
-                          <div style={{ fontFamily:T.mono, fontSize:12, color:T.muted, textAlign:"center" }}>
+                          <div className="text-mono text-xs" style={{ color:T.muted, textAlign:"center" }}>
                             {ev.message}
                           </div>
                         ) : (
                           <>
-                            <div style={{ fontFamily:T.display, fontSize:13, fontWeight:600, color:T.text, marginBottom:2 }}>
+                            <div className="live-feed-title">
                               <span style={{ color: T.accentHi }}>{ev.user}</span>
                               {ev.type==="solve"
                                 ? <> solved a <span style={{ color: DIFF[ev.diff]?.color }}>{ev.diff}</span> challenge</>
                                 : <> climbed the rankings</>
                               }
                             </div>
-                            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                              {ev.xp && <span style={{ fontFamily:T.mono, fontSize:10, padding:"2px 8px", borderRadius:10, background:T.greenLo, color:T.green, border:`1px solid rgba(16,185,129,0.2)` }}>+{ev.xp} XP</span>}
-                              <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>{ev.time}</span>
+                            <div className="live-feed-meta">
+                              {ev.xp && <span className="xp-badge">+{ev.xp} XP</span>}
+                              <span className="text-mono text-xs" style={{ color:T.muted }}>{ev.time}</span>
                             </div>
                           </>
                         )}
@@ -536,8 +453,8 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div style={{ padding:"14px 18px", textAlign:"center" }}>
-                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>
+                <div className="live-feed-footer">
+                  <span className="text-mono text-xs" style={{ color:T.muted2 }}>
                     {liveEvents.length > 0 && liveEvents[0].type !== 'info' ? 'Live activity from the last 24 hours' : 'Real-time coding activity'}
                   </span>
                 </div>
@@ -561,6 +478,10 @@ export default function Home() {
 // ── SUB-COMPONENTS ──────────────────────────────
 
 function NavBar({ skeleton, session, userXp, signOut: doSignOut, xpAnim }) {
+  const sk = {
+    background:'rgba(255,255,255,0.05)',
+    animation:'pulse 1.5s ease-in-out infinite',
+  };
   return (
     <nav style={{
       position:"sticky", top:0, zIndex:100,
@@ -665,21 +586,3 @@ function Fonts() {
     `}</style>
   );
 }
-
-// ── SHARED STYLES ──────────────────────────────
-const pg = {
-  minHeight:"100vh", background:T.bg, color:T.text,
-  fontFamily:T.display, position:"relative", overflowX:"hidden",
-};
-const mainStyle = {
-  position:"relative", zIndex:2,
-  maxWidth:1240, margin:"0 auto", padding:"48px 48px 80px",
-};
-const heroWrap = {
-  display:"flex", alignItems:"flex-end", justifyContent:"space-between",
-  gap:40, paddingBottom:40, marginBottom:0,
-};
-const sk = {
-  background:"rgba(255,255,255,0.05)",
-  animation:"pulse 1.5s ease-in-out infinite",
-};
