@@ -267,6 +267,18 @@ main {
   background: rgba(0, 255, 148, 0.06);
 }
 
+.leaderboard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  margin-top: 20px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #5a6070;
+}
+
 .field-label {
   font-family: 'Space Mono', monospace;
   font-size: 10px;

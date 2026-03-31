@@ -414,7 +414,7 @@ export default function Home() {
 
                 {/* Footer */}
                 <div className="leaderboard-footer">
-                  <span className="text-mono text-xs" style={{ color:T.muted2 }}>{leaderboard.length} coders globally</span>
+                  <span className="text-mono text-xs" style={{ color:T.muted2 }}>coders globally</span>
                   <span className="text-mono text-xs" style={{ color:T.muted2 }}>updates live</span>
                 </div>
               </div>
