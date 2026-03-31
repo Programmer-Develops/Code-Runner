@@ -68,6 +68,16 @@ export async function GET(request) {
       liveEvents.push(...rankEvents);
     }
 
+    // If still no events, return a default message
+    if (liveEvents.length === 0) {
+      return Response.json([{
+        type: 'info',
+        user: 'System',
+        time: 'now',
+        message: 'No recent activity. Be the first to solve a challenge!'
+      }]);
+    }
+
     return Response.json(liveEvents);
 
   } catch (error) {

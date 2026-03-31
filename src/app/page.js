@@ -87,10 +87,9 @@ export default function Home() {
     fetchLeaderboard().then(setLeaderboard);
     fetchLiveEvents().then(setLiveEvents);
 
-    // Set up polling for live events every 30 seconds
     const interval = setInterval(() => {
       fetchLiveEvents().then(setLiveEvents);
-    }, 30000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
@@ -507,30 +506,40 @@ export default function Home() {
                         width:32, height:32, borderRadius:"50%", flexShrink:0,
                         background: ev.type==="solve"
                           ? DIFF[ev.diff]?.lo || T.accentLo
-                          : T.accentLo,
+                          : ev.type==="rank" ? T.accentLo : T.surface2,
                         display:"flex", alignItems:"center", justifyContent:"center",
                         fontSize:14,
                       }}>
-                        {ev.type==="solve" ? "⚡" : "📈"}
+                        {ev.type==="solve" ? "⚡" : ev.type==="rank" ? "📈" : "ℹ️"}
                       </div>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontFamily:T.display, fontSize:13, fontWeight:600, color:T.text, marginBottom:2 }}>
-                          <span style={{ color: T.accentHi }}>{ev.user}</span>
-                          {ev.type==="solve"
-                            ? <> solved a <span style={{ color: DIFF[ev.diff]?.color }}>{ev.diff}</span> challenge</>
-                            : <> climbed the rankings</>
-                          }
-                        </div>
-                        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                          {ev.xp && <span style={{ fontFamily:T.mono, fontSize:10, padding:"2px 8px", borderRadius:10, background:T.greenLo, color:T.green, border:`1px solid rgba(16,185,129,0.2)` }}>+{ev.xp} XP</span>}
-                          <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>{ev.time}</span>
-                        </div>
+                        {ev.type === "info" ? (
+                          <div style={{ fontFamily:T.mono, fontSize:12, color:T.muted, textAlign:"center" }}>
+                            {ev.message}
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ fontFamily:T.display, fontSize:13, fontWeight:600, color:T.text, marginBottom:2 }}>
+                              <span style={{ color: T.accentHi }}>{ev.user}</span>
+                              {ev.type==="solve"
+                                ? <> solved a <span style={{ color: DIFF[ev.diff]?.color }}>{ev.diff}</span> challenge</>
+                                : <> climbed the rankings</>
+                              }
+                            </div>
+                            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                              {ev.xp && <span style={{ fontFamily:T.mono, fontSize:10, padding:"2px 8px", borderRadius:10, background:T.greenLo, color:T.green, border:`1px solid rgba(16,185,129,0.2)` }}>+{ev.xp} XP</span>}
+                              <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>{ev.time}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
                 <div style={{ padding:"14px 18px", textAlign:"center" }}>
-                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>Updates every 30 seconds</span>
+                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>
+                    {liveEvents.length > 0 && liveEvents[0].type !== 'info' ? 'Live activity from the last 24 hours' : 'Real-time coding activity'}
+                  </span>
                 </div>
               </div>
             )}
