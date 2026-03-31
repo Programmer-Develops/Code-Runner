@@ -18,6 +18,17 @@ const fetchLeaderboard = async () => {
   }
 };
 
+const fetchLiveEvents = async () => {
+  try {
+    const response = await fetch("/api/live-events");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching live events:", error);
+    return [];
+  }
+};
+
 // ── DESIGN TOKENS ──────────────────────────────
 const T = {
   bg:        "#0c0e14",
@@ -53,18 +64,12 @@ const LANG = {
   javascript: { emoji: "⚡", name: "JavaScript",  sub: "Node 18 · Beta" },
 };
 
-// Mock live events for the feed (in real app, replace with WebSocket/polling)
-const LIVE_EVENTS_MOCK = [
-  { type: "solve", user: "Priya", diff: "Extreme", xp: 87,  time: "2m ago"  },
-  { type: "solve", user: "Alex",  diff: "Hard",    xp: 45,  time: "5m ago"  },
-  { type: "rank",  user: "Rahul",                           time: "8m ago"  },
-  { type: "solve", user: "Kavya", diff: "Easy",    xp: 12,  time: "11m ago" },
-  { type: "solve", user: "Dev",   diff: "Hard",    xp: 38,  time: "14m ago" },
-];
+// Live events are now fetched from the API in real-time
 
 export default function Home() {
   const { data: session, status } = useSession();
   const [leaderboard, setLeaderboard]   = useState([]);
+  const [liveEvents, setLiveEvents]     = useState([]);
   const [difficulty, setDifficulty]     = useState("Easy");
   const [language, setLanguage]         = useState("python");
   const [starting, setStarting]         = useState(false);
@@ -80,6 +85,14 @@ export default function Home() {
 
   useEffect(() => {
     fetchLeaderboard().then(setLeaderboard);
+    fetchLiveEvents().then(setLiveEvents);
+
+    // Set up polling for live events every 30 seconds
+    const interval = setInterval(() => {
+      fetchLiveEvents().then(setLiveEvents);
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const startChallenge = () => {
@@ -483,7 +496,7 @@ export default function Home() {
             {lbTab === "feed" && (
               <div>
                 <div style={{ padding:"8px 0" }}>
-                  {LIVE_EVENTS_MOCK.map((ev, i) => (
+                  {liveEvents.map((ev, i) => (
                     <div key={i} style={{
                       padding:"12px 18px",
                       borderBottom:`1px solid ${T.border}`,
@@ -517,7 +530,7 @@ export default function Home() {
                   ))}
                 </div>
                 <div style={{ padding:"14px 18px", textAlign:"center" }}>
-                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>Showing recent activity</span>
+                  <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted2 }}>Updates every 30 seconds</span>
                 </div>
               </div>
             )}

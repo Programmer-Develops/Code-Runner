@@ -2,440 +2,529 @@
 
 import { useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
-// import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Link from 'next/link';
 
+// ── DESIGN TOKENS (must match page.js exactly) ──
+const T = {
+  bg:         "#0c0e14",
+  surface:    "#12151f",
+  surface2:   "#181c28",
+  border:     "rgba(255,255,255,0.07)",
+  borderHi:   "rgba(255,255,255,0.14)",
+  accent:     "#7c3aed",
+  accentLo:   "rgba(124,58,237,0.15)",
+  accentGlow: "rgba(124,58,237,0.35)",
+  accentHi:   "#9f6ef5",
+  green:      "#10b981",
+  greenLo:    "rgba(16,185,129,0.12)",
+  amber:      "#f59e0b",
+  amberLo:    "rgba(245,158,11,0.12)",
+  red:        "#ef4444",
+  redLo:      "rgba(239,68,68,0.12)",
+  text:       "#f1f5f9",
+  muted:      "#64748b",
+  muted2:     "#334155",
+  mono:       "'DM Mono', 'Fira Code', monospace",
+  display:    "'DM Sans', sans-serif",
+};
+
 export default function ProfilePage() {
   const { data: session, status } = useSession();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [profile, setProfile]     = useState(null);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState(null);
+  const [activeTab, setActiveTab] = useState('activity'); // 'activity' | 'stats'
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/profile?userId=${session.user.id}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        setProfile(data);
-      } catch (err) {
-        console.error(err);
-        setError('Unable to load profile');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
+    fetch(`/api/profile?userId=${session.user.id}`)
+      .then(r => { if (!r.ok) throw new Error('Failed'); return r.json(); })
+      .then(data => { setLoading(false); setProfile(data); })
+      .catch(() => { setLoading(false); setError('Unable to load profile'); });
   }, [session]);
 
+  // ── LOADING ─────────────────────────────────────
   if (status === 'loading') {
     return (
-      <div style={S.page}>
-        <GridOverlay /><Orbs />
-        <Nav skeleton />
-        <main style={S.main}>
-          <div style={{ ...S.profileHeader, marginBottom: 32 }}>
-            <div style={{ ...S.skel, width: 96, height: 96, borderRadius: 12 }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ ...S.skel, width: 220, height: 22, borderRadius: 4, marginBottom: 10 }} />
-              <div style={{ ...S.skel, width: 160, height: 14, borderRadius: 4, marginBottom: 10 }} />
-              <div style={{ ...S.skel, width: 80,  height: 26, borderRadius: 20 }} />
+      <div style={pg}>
+        <Mesh /><Noise />
+        <NavBar skeleton />
+        <main style={mainS}>
+          {/* Profile header skeleton */}
+          <div style={{ display:'flex', alignItems:'flex-start', gap:20, marginBottom:40 }}>
+            <div style={{ ...sk, width:100, height:100, borderRadius:16, flexShrink:0 }} />
+            <div style={{ flex:1, paddingTop:4 }}>
+              <div style={{ ...sk, width:240, height:24, borderRadius:6, marginBottom:12 }} />
+              <div style={{ ...sk, width:180, height:14, borderRadius:4, marginBottom:16 }} />
+              <div style={{ display:'flex', gap:8 }}>
+                {[90,80,100].map(w => <div key={w} style={{ ...sk, width:w, height:28, borderRadius:20 }} />)}
+              </div>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
-            <div style={{ ...S.card }}>
-              <div style={{ ...S.skel, width: 120, height: 14, borderRadius: 4, marginBottom: 20 }} />
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:20 }}>
+            <div style={{ ...card, padding:24 }}>
               {[1,2,3,4].map(i => (
-                <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'14px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'14px 0', borderBottom:`1px solid ${T.border}` }}>
                   <div>
-                    <div style={{ ...S.skel, width: 180, height: 13, borderRadius: 4, marginBottom: 8 }} />
-                    <div style={{ ...S.skel, width: 120, height: 11, borderRadius: 4 }} />
+                    <div style={{ ...sk, width:200, height:13, borderRadius:4, marginBottom:8 }} />
+                    <div style={{ ...sk, width:130, height:11, borderRadius:4 }} />
                   </div>
-                  <div style={{ ...S.skel, width: 70, height: 32, borderRadius: 6 }} />
+                  <div style={{ ...sk, width:72, height:32, borderRadius:8 }} />
                 </div>
               ))}
             </div>
-            <div>
-              <div style={{ ...S.card, marginBottom: 16 }}>
-                <div style={{ ...S.skel, width: 60, height: 14, borderRadius: 4, marginBottom: 16 }} />
-                {[1,2,3,4].map(i => (
-                  <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ ...S.skel, width: 140, height: 12, borderRadius: 4 }} />
-                    <div style={{ ...S.skel, width: 40,  height: 12, borderRadius: 4 }} />
-                  </div>
-                ))}
-              </div>
-              <div style={S.card}>
-                <div style={{ ...S.skel, width: 80, height: 14, borderRadius: 4, marginBottom: 16 }} />
-                <div style={{ display:'flex', gap: 10, flexWrap:'wrap' }}>
-                  {[1,2].map(i => <div key={i} style={{ ...S.skel, width: 110, height: 72, borderRadius: 10 }} />)}
-                </div>
-              </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {[180,120,100].map(h => <div key={h} style={{ ...sk, height:h, borderRadius:16 }} />)}
             </div>
           </div>
         </main>
-        <style>{fonts}</style>
+        <Fonts />
       </div>
     );
   }
 
+  // ── UNAUTHENTICATED ─────────────────────────────
   if (status === 'unauthenticated') {
     return (
-      <div style={S.page}>
-        <GridOverlay /><Orbs />
-        <div style={S.signinWrap}>
-          <div style={S.signinCard}>
-            <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:200, height:1, background:'linear-gradient(90deg,transparent,#00e5ff,transparent)' }} />
-            <div style={S.signinLogo}>
-              <span style={{ width:8, height:8, borderRadius:'50%', background:'#00e5ff', boxShadow:'0 0 12px #00e5ff', display:'inline-block' }} />
-              CODE_RUNNER
+      <div style={pg}>
+        <Mesh /><Noise />
+        <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', zIndex:1 }}>
+          <div style={{
+            width:'100%', maxWidth:440, padding:'60px 52px',
+            background:T.surface, border:`1px solid ${T.borderHi}`,
+            borderRadius:24, textAlign:'center', position:'relative',
+          }}>
+            <div style={{ position:'absolute', top:0, left:'10%', right:'10%', height:1, background:`linear-gradient(90deg,transparent,${T.accent},transparent)` }} />
+            <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 14px', borderRadius:20, background:T.accentLo, border:`1px solid ${T.accentGlow}`, marginBottom:28 }}>
+              <span style={{ width:6, height:6, borderRadius:'50%', background:T.accent, boxShadow:`0 0 8px ${T.accent}`, display:'inline-block' }} />
+              <span style={{ fontFamily:T.mono, fontSize:11, color:T.accentHi, letterSpacing:1 }}>CODE RUNNER</span>
             </div>
-            <h1 style={{ fontSize:32, fontWeight:800, letterSpacing:-1.5, marginBottom:10 }}>Profile<span style={{ color:'#00e5ff' }}>.</span></h1>
-            <p style={{ fontSize:14, color:'#5a6070', marginBottom:36, lineHeight:1.6 }}>Sign in to view your profile, stats and badges.</p>
-            <button style={S.signinBtn} onClick={() => signIn()}>Sign in to continue</button>
+            <h1 style={{ fontSize:38, fontWeight:800, letterSpacing:-2, lineHeight:1.1, marginBottom:12, fontFamily:T.display }}>
+              Your Profile<span style={{ color:T.accent }}>.</span>
+            </h1>
+            <p style={{ fontSize:15, color:T.muted, marginBottom:40, lineHeight:1.7 }}>Sign in to view your stats, badges and submission history.</p>
+            <button
+              style={{ width:'100%', padding:'15px 20px', background:'transparent', border:`1px solid ${T.borderHi}`, borderRadius:12, color:T.text, fontFamily:T.display, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:12, transition:'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.background=T.accentLo; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor=T.borderHi; e.currentTarget.style.background='transparent'; }}
+              onClick={() => signIn('google')}
+            >
+              <span style={{ width:20, height:20, background:'white', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#4285f4' }}>G</span>
+              Continue with Google
+            </button>
+            <p style={{ marginTop:20, fontFamily:T.mono, fontSize:11, color:T.muted2 }}>Progress saved automatically</p>
           </div>
         </div>
-        <style>{fonts}</style>
+        <Fonts />
       </div>
     );
   }
 
-  const xp      = profile?.stats?.xp ?? session.user.xp ?? 0;
-  const solved  = profile?.stats?.uniqueSolvedQuestions ?? 0;
-  const attempted = profile?.stats?.uniqueQuestionsAttempted ?? 0;
+  // ── AUTHENTICATED ───────────────────────────────
+  const xp            = profile?.stats?.xp ?? session.user.xp ?? 0;
+  const solved        = profile?.stats?.uniqueSolvedQuestions ?? 0;
+  const attempted     = profile?.stats?.uniqueQuestionsAttempted ?? 0;
   const totalAttempts = profile?.stats?.totalAttempts ?? 0;
-  const successRate = attempted > 0 ? Math.round((solved / attempted) * 100) : 0;
+  const successRate   = attempted > 0 ? Math.round((solved / attempted) * 100) : 0;
+  const level         = Math.floor(xp / 100) + 1;
+  const levelXp       = xp % 100;
 
   return (
-    <div style={S.page}>
-      <GridOverlay /><Orbs />
+    <div style={pg}>
+      <Mesh /><Noise />
 
-      <Nav session={session} xp={xp} />
+      <NavBar session={session} xp={xp} />
 
-      <main style={S.main}>
+      <main style={mainS}>
 
-        <div style={S.profileHeader}>
+        {/* ── PROFILE HERO ── */}
+        <div style={{ display:'flex', alignItems:'flex-start', gap:24, marginBottom:0, flexWrap:'wrap' }}>
+
+          {/* Avatar */}
           <div style={{ position:'relative', flexShrink:0 }}>
-            <div style={{ width:96, height:96, borderRadius:12, overflow:'hidden', background:'#0d1220', border:'1px solid rgba(255,255,255,0.1)', position:'relative' }}>
+            <div style={{
+              width:100, height:100, borderRadius:16, overflow:'hidden',
+              background:T.surface2,
+              border:`1px solid ${T.borderHi}`,
+              boxShadow:`0 0 0 4px ${T.accentLo}`,
+            }}>
               {session.user.image
-                ? <Image src={session.user.image} alt="avatar" width={96} height={96} style={{ objectFit:'cover' }} />
-                : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36 }}>👤</div>
+                ? <Image src={session.user.image} alt="avatar" width={100} height={100} style={{ objectFit:'cover' }} />
+                : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>👤</div>
               }
             </div>
-            <div style={{ position:'absolute', bottom:4, right:4, width:12, height:12, borderRadius:'50%', background:'#00ff94', border:'2px solid #050810', boxShadow:'0 0 8px #00ff94' }} />
+            {/* Online indicator */}
+            <div style={{ position:'absolute', bottom:6, right:6, width:14, height:14, borderRadius:'50%', background:T.green, border:`2px solid ${T.bg}`, boxShadow:`0 0 8px ${T.green}` }} />
           </div>
 
-          <div style={{ flex:1 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:4, flexWrap:'wrap' }}>
-              <h1 style={{ margin:0, fontSize:28, fontWeight:800, letterSpacing:-1 }}>{session.user.name}</h1>
-              <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, padding:'3px 10px', borderRadius:20, color:'#00e5ff', border:'1px solid rgba(0,229,255,0.3)', background:'rgba(0,229,255,0.07)' }}>● Active</span>
+          {/* Name + meta */}
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4, flexWrap:'wrap' }}>
+              <h1 style={{ margin:0, fontFamily:T.display, fontSize:30, fontWeight:800, letterSpacing:-1, color:T.text }}>{session.user.name}</h1>
+              <span style={{ fontFamily:T.mono, fontSize:10, padding:'3px 10px', borderRadius:20, color:T.green, border:`1px solid rgba(16,185,129,0.25)`, background:T.greenLo }}>● Online</span>
+              <span style={{ fontFamily:T.mono, fontSize:10, padding:'3px 10px', borderRadius:20, color:T.accentHi, border:`1px solid ${T.accentGlow}`, background:T.accentLo }}>Lv.{level}</span>
             </div>
-            <p style={{ margin:0, fontFamily:"'Space Mono',monospace", fontSize:11, color:'#5a6070', marginBottom:14 }}>{session.user.email}</p>
 
+            <p style={{ margin:'0 0 14px', fontFamily:T.mono, fontSize:11, color:T.muted }}>{session.user.email}</p>
+
+            {/* Stat pills */}
             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-              <span style={{ fontFamily:"'Space Mono',monospace", fontSize:12, padding:'5px 14px', background:'rgba(255,184,0,0.1)', border:'1px solid rgba(255,184,0,0.25)', borderRadius:20, color:'#ffb800' }}>⚡ {xp} XP</span>
-              <span style={{ fontFamily:"'Space Mono',monospace", fontSize:12, padding:'5px 14px', background:'rgba(0,255,148,0.07)', border:'1px solid rgba(0,255,148,0.2)', borderRadius:20, color:'#00ff94' }}>✓ {solved} solved</span>
-              <span style={{ fontFamily:"'Space Mono',monospace", fontSize:12, padding:'5px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, color:'#5a6070' }}>{successRate}% success</span>
+              {[
+                { label:`${xp} XP`,          color:T.amber,   lo:T.amberLo,  border:'rgba(245,158,11,0.3)',  icon:'⚡' },
+                { label:`${solved} Solved`,  color:T.green,   lo:T.greenLo,  border:'rgba(16,185,129,0.3)',  icon:'✓'  },
+                { label:`${successRate}% Win`, color:successRate>=60?T.green:successRate>=30?T.amber:T.red,
+                  lo:successRate>=60?T.greenLo:successRate>=30?T.amberLo:T.redLo,
+                  border:successRate>=60?'rgba(16,185,129,0.3)':successRate>=30?'rgba(245,158,11,0.3)':'rgba(239,68,68,0.3)',
+                  icon:'📊' },
+              ].map(({ label, color, lo, border, icon }) => (
+                <span key={label} style={{ fontFamily:T.mono, fontSize:12, padding:'6px 14px', background:lo, border:`1px solid ${border}`, borderRadius:20, color, display:'flex', alignItems:'center', gap:5 }}>
+                  <span style={{ fontSize:11 }}>{icon}</span>{label}
+                </span>
+              ))}
             </div>
           </div>
 
-          <Link href="/" style={{ textDecoration:'none' }}>
+          {/* Back button */}
+          <Link href="/" style={{ textDecoration:'none', alignSelf:'flex-start' }}>
             <button
-              style={S.backBtn}
-              onMouseEnter={e => { e.currentTarget.style.borderColor='#00e5ff'; e.currentTarget.style.color='#00e5ff'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#5a6070'; }}
-            >
-              ← home
-            </button>
+              style={{ fontFamily:T.mono, fontSize:11, padding:'8px 16px', background:'transparent', border:`1px solid ${T.border}`, color:T.muted, borderRadius:8, cursor:'pointer', transition:'all 0.2s', letterSpacing:0.5 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor=T.accent; e.currentTarget.style.color=T.accentHi; e.currentTarget.style.background=T.accentLo; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.muted; e.currentTarget.style.background='transparent'; }}
+            >← Home</button>
           </Link>
         </div>
 
-        <div style={{ height:1, background:'linear-gradient(90deg,rgba(0,229,255,0.3),rgba(0,229,255,0.05),transparent)', margin:'28px 0' }} />
+        {/* Accent divider */}
+        <div style={{ height:1, background:`linear-gradient(90deg,${T.accent}66,${T.accentHi}22,transparent)`, margin:'28px 0 32px' }} />
 
+        {/* ── CONTENT GRID ── */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:20, alignItems:'start' }}>
 
-          <div style={S.card}>
-            <div style={S.cardHeader}>
-              <span style={S.cardTitle}>Recent Activity</span>
-              {profile?.recent?.length > 0 && (
-                <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070' }}>{profile.recent.length} submissions</span>
+          {/* LEFT — Activity */}
+          <div style={{ ...card, overflow:'hidden' }}>
+            {/* Card header with tab switcher */}
+            <div style={{ padding:'18px 24px', borderBottom:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div style={{ display:'flex', gap:4, background:T.surface2, borderRadius:10, padding:3 }}>
+                {[['activity','Activity'],['badges','Badges']].map(([id,label]) => (
+                  <button key={id} onClick={() => setActiveTab(id)} style={{
+                    padding:'6px 14px', borderRadius:8,
+                    background: activeTab===id ? T.accent : 'transparent',
+                    border:'none', color: activeTab===id ? '#fff' : T.muted,
+                    fontFamily:T.mono, fontSize:10, cursor:'pointer',
+                    transition:'all 0.2s', fontWeight: activeTab===id ? 700 : 400, letterSpacing:0.5,
+                  }}>{label}</button>
+                ))}
+              </div>
+              {profile?.recent?.length > 0 && activeTab==='activity' && (
+                <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>{profile.recent.length} submissions</span>
               )}
             </div>
 
-            {loading && (
-              <div style={{ padding:'32px 0', textAlign:'center' }}>
-                <div style={{ width:24, height:24, border:'2px solid rgba(0,229,255,0.2)', borderTopColor:'#00e5ff', borderRadius:'50%', animation:'spin 0.8s linear infinite', margin:'0 auto 12px' }} />
-                <p style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:'#5a6070', margin:0 }}>Loading activity...</p>
-              </div>
-            )}
-
-            {error && (
-              <div style={{ padding:'20px 0', fontFamily:"'Space Mono',monospace", fontSize:12, color:'#ff4566' }}>{error}</div>
-            )}
-
-            {!loading && !error && profile?.recent?.length === 0 && (
-              <div style={{ padding:'40px 0', textAlign:'center' }}>
-                <div style={{ fontSize:32, marginBottom:12 }}>{'{ }'}</div>
-                <p style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:'#5a6070', margin:0 }}>No activity yet — start solving!</p>
-              </div>
-            )}
-
-            <div style={{ padding: '0 24px' }}>
-              {profile?.recent?.map((item, i) => {
-                const accepted = item.status === 'accepted';
-                return (
-                  <div key={item.id || i} style={{
-                    display:'flex', justifyContent:'space-between', alignItems:'center',
-                    padding:'14px 0',
-                    borderBottom: i < profile.recent.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                    gap: 12,
-                  }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontWeight:600, fontSize:13, color:'#e8eaf0', marginBottom:4, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                        {item.questionTitle}
-                      </div>
-                      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070' }}>
-                        <span style={{
-                          color: item.difficulty === 'Easy' ? '#4ade80' : item.difficulty === 'Hard' ? '#fbbf24' : '#f87171',
-                          marginRight: 8,
-                        }}>{item.difficulty}</span>
-                        {item.testsPassed}/{item.testsTotal} tests passed
-                      </div>
-                    </div>
-                    <div style={{ textAlign:'right', flexShrink:0 }}>
-                      <div style={{
-                        fontFamily:"'Space Mono',monospace", fontSize:10, padding:'3px 10px', borderRadius:20, marginBottom:4, display:'inline-block',
-                        color:      accepted ? '#00ff94' : '#ff4566',
-                        background: accepted ? 'rgba(0,255,148,0.08)' : 'rgba(255,69,102,0.08)',
-                        border:     `1px solid ${accepted ? 'rgba(0,255,148,0.2)' : 'rgba(255,69,102,0.2)'}`,
-                      }}>
-                        {accepted ? 'accepted' : item.status}
-                      </div>
-                      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:'#ffb800' }}>+{item.xpEarned} XP</div>
-                    </div>
+            {/* ── ACTIVITY TAB ── */}
+            {activeTab === 'activity' && (
+              <div>
+                {loading && (
+                  <div style={{ padding:'40px 0', textAlign:'center' }}>
+                    <div style={{ width:24, height:24, border:`2px solid ${T.accentLo}`, borderTopColor:T.accent, borderRadius:'50%', animation:'spin 0.8s linear infinite', margin:'0 auto 12px' }} />
+                    <p style={{ fontFamily:T.mono, fontSize:11, color:T.muted, margin:0 }}>Loading activity...</p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-
-            <div style={S.card}>
-              <div style={S.cardHeader}>
-                <span style={S.cardTitle}>Stats</span>
-              </div>
-              <div style={{ padding:'4px 24px 16px' }}>
-                {[
-                  { label:'Total XP',           val: xp,            color:'#ffb800' },
-                  { label:'Problems Solved',     val: solved,        color:'#00ff94' },
-                  { label:'Problems Attempted',  val: attempted,     color:'#00e5ff' },
-                  { label:'Total Submissions',   val: totalAttempts, color:'#e8eaf0' },
-                  { label:'Success Rate',        val: `${successRate}%`, color: successRate >= 60 ? '#00ff94' : successRate >= 30 ? '#ffb800' : '#ff4566' },
-                ].map(({ label, val, color }) => (
-                  <div key={label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                    <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070', textTransform:'uppercase', letterSpacing:1 }}>{label}</span>
-                    <span style={{ fontFamily:"'Space Mono',monospace", fontSize:14, fontWeight:700, color }}>{val}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={S.card}>
-              <div style={S.cardHeader}>
-                <span style={S.cardTitle}>XP Progress</span>
-              </div>
-              <div style={{ padding:'16px 24px' }}>
-                {(() => {
-                  const level      = Math.floor(xp / 100) + 1;
-                  const levelXp    = xp % 100;
-                  const levelPct   = levelXp;
-                  return (
-                    <>
-                      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
-                        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070' }}>LVL {level}</span>
-                        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070' }}>{levelXp}/100 XP</span>
-                      </div>
-                      <div style={{ height:6, background:'rgba(255,255,255,0.06)', borderRadius:3, overflow:'hidden' }}>
-                        <div style={{ height:'100%', width:`${levelPct}%`, background:'linear-gradient(90deg,#00e5ff,#00ff94)', borderRadius:3, transition:'width 0.5s ease' }} />
-                      </div>
-                      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070', marginTop:8 }}>
-                        {100 - levelXp} XP to level {level + 1}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-
-            <div style={S.card}>
-              <div style={S.cardHeader}>
-                <span style={S.cardTitle}>Badges</span>
-                {profile?.badges?.length > 0 && (
-                  <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070' }}>{profile.badges.length} earned</span>
                 )}
+
+                {error && <div style={{ padding:'20px 24px', fontFamily:T.mono, fontSize:12, color:T.red }}>{error}</div>}
+
+                {!loading && !error && !profile?.recent?.length && (
+                  <div style={{ padding:'52px 24px', textAlign:'center' }}>
+                    <div style={{ fontSize:36, marginBottom:12, opacity:0.4 }}>{'{ }'}</div>
+                    <p style={{ fontFamily:T.mono, fontSize:12, color:T.muted, margin:0 }}>No submissions yet — start solving!</p>
+                    <Link href="/" style={{ textDecoration:'none' }}>
+                      <button style={{ marginTop:16, padding:'9px 20px', background:T.accentLo, border:`1px solid ${T.accentGlow}`, borderRadius:10, color:T.accentHi, fontFamily:T.mono, fontSize:11, cursor:'pointer' }}>
+                        ⚡ Start a challenge
+                      </button>
+                    </Link>
+                  </div>
+                )}
+
+                <div style={{ padding:'0 24px' }}>
+                  {profile?.recent?.map((item, i) => {
+                    const ok = item.status === 'accepted';
+                    const diffColor = item.difficulty==='Easy' ? T.green : item.difficulty==='Hard' ? T.amber : T.red;
+                    return (
+                      <div key={item.id || i} style={{
+                        display:'flex', justifyContent:'space-between', alignItems:'center',
+                        padding:'14px 0',
+                        borderBottom: i < profile.recent.length-1 ? `1px solid ${T.border}` : 'none',
+                        gap:12,
+                      }}>
+                        {/* Left: status icon + info */}
+                        <div style={{ display:'flex', alignItems:'center', gap:12, flex:1, minWidth:0 }}>
+                          <div style={{ width:32, height:32, borderRadius:'50%', flexShrink:0, background: ok ? T.greenLo : T.redLo, border:`1px solid ${ok?'rgba(16,185,129,0.25)':'rgba(239,68,68,0.25)'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>
+                            {ok ? '✓' : '✗'}
+                          </div>
+                          <div style={{ minWidth:0 }}>
+                            <div style={{ fontFamily:T.display, fontWeight:600, fontSize:13, color:T.text, marginBottom:3, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                              {item.questionTitle}
+                            </div>
+                            <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                              <span style={{ fontFamily:T.mono, fontSize:9, padding:'2px 7px', borderRadius:10, color:diffColor, background: item.difficulty==='Easy'?T.greenLo:item.difficulty==='Hard'?T.amberLo:T.redLo, border:`1px solid ${diffColor}44` }}>{item.difficulty}</span>
+                              <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>{item.testsPassed}/{item.testsTotal} tests</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: status + XP */}
+                        <div style={{ textAlign:'right', flexShrink:0 }}>
+                          <div style={{ fontFamily:T.mono, fontSize:10, padding:'3px 10px', borderRadius:20, marginBottom:4, display:'inline-block', color: ok?T.green:T.red, background: ok?T.greenLo:T.redLo, border:`1px solid ${ok?'rgba(16,185,129,0.2)':'rgba(239,68,68,0.2)'}` }}>
+                            {ok ? 'accepted' : item.status}
+                          </div>
+                          <div style={{ fontFamily:T.mono, fontSize:11, color:T.amber, fontWeight:700 }}>+{item.xpEarned} XP</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div style={{ padding:'8px 24px 20px' }}>
+            )}
+
+            {/* ── BADGES TAB ── */}
+            {activeTab === 'badges' && (
+              <div style={{ padding:'20px 24px' }}>
                 {!profile?.badges?.length
-                  ? <p style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:'#5a6070', margin:'12px 0 0' }}>Keep solving to earn badges!</p>
-                  : (
-                    <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:8 }}>
+                  ? (
+                    <div style={{ padding:'32px 0', textAlign:'center' }}>
+                      <div style={{ fontSize:36, marginBottom:12, opacity:0.4 }}>🏅</div>
+                      <p style={{ fontFamily:T.mono, fontSize:12, color:T.muted, margin:0 }}>No badges yet — keep solving to earn them!</p>
+                    </div>
+                  ) : (
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))', gap:12 }}>
                       {profile.badges.map(b => (
                         <div key={b.key} style={{
-                          padding:'10px 12px', borderRadius:10, textAlign:'center', minWidth:100,
-                          background:'rgba(255,255,255,0.03)',
-                          border:'1px solid rgba(255,255,255,0.07)',
+                          padding:'16px 12px', borderRadius:12, textAlign:'center',
+                          background:T.surface2,
+                          border:`1px solid ${T.border}`,
                           transition:'all 0.2s',
-                        }}>
-                          <div style={{ fontSize:22, marginBottom:4 }}>{b.emoji}</div>
-                          <div style={{ fontWeight:600, fontSize:12, color:'#e8eaf0' }}>{b.name}</div>
-                          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:'#5a6070', marginTop:2 }}>{b.desc}</div>
+                          position:'relative', overflow:'hidden',
+                        }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor=T.accentGlow; e.currentTarget.style.transform='translateY(-2px)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.transform='none'; }}
+                        >
+                          <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${T.accent},transparent)` }} />
+                          <div style={{ fontSize:28, marginBottom:8 }}>{b.emoji}</div>
+                          <div style={{ fontFamily:T.display, fontWeight:700, fontSize:12, color:T.text, marginBottom:3 }}>{b.name}</div>
+                          <div style={{ fontFamily:T.mono, fontSize:10, color:T.muted, lineHeight:1.4 }}>{b.desc}</div>
                         </div>
                       ))}
                     </div>
                   )
                 }
               </div>
+            )}
+          </div>
+
+          {/* RIGHT — Stats + XP */}
+          <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+            {/* Stats card */}
+            <div style={{ ...card, overflow:'hidden' }}>
+              <div style={{ height:3, background:`linear-gradient(90deg,${T.accent},${T.accentHi},transparent)` }} />
+              <div style={{ padding:'16px 20px', borderBottom:`1px solid ${T.border}` }}>
+                <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted, textTransform:'uppercase', letterSpacing:2 }}>Stats</span>
+              </div>
+              <div style={{ padding:'4px 20px 16px' }}>
+                {[
+                  { label:'Total XP',          val: xp,                   color:T.amber  },
+                  { label:'Solved',             val: solved,               color:T.green  },
+                  { label:'Attempted',          val: attempted,            color:T.accentHi },
+                  { label:'Submissions',        val: totalAttempts,        color:T.text   },
+                  { label:'Win Rate',           val: `${successRate}%`,    color: successRate>=60?T.green:successRate>=30?T.amber:T.red },
+                ].map(({ label, val, color }) => (
+                  <div key={label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:`1px solid ${T.border}` }}>
+                    <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted, textTransform:'uppercase', letterSpacing:1 }}>{label}</span>
+                    <span style={{ fontFamily:T.mono, fontSize:15, fontWeight:700, color }}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* XP / Level card */}
+            <div style={{ ...card, overflow:'hidden' }}>
+              <div style={{ height:3, background:`linear-gradient(90deg,${T.amber},${T.accent},transparent)` }} />
+              <div style={{ padding:'16px 20px', borderBottom:`1px solid ${T.border}` }}>
+                <span style={{ fontFamily:T.mono, fontSize:10, color:T.muted, textTransform:'uppercase', letterSpacing:2 }}>Level Progress</span>
+              </div>
+              <div style={{ padding:'18px 20px' }}>
+                {/* Level badge */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <div style={{ width:40, height:40, borderRadius:10, background:T.accentLo, border:`1px solid ${T.accentGlow}`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:T.display, fontSize:16, fontWeight:800, color:T.accentHi }}>
+                      {level}
+                    </div>
+                    <div>
+                      <div style={{ fontFamily:T.display, fontSize:13, fontWeight:700, color:T.text }}>Level {level}</div>
+                      <div style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>{levelXp} / 100 XP</div>
+                    </div>
+                  </div>
+                  <div style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>→ Lv.{level+1}</div>
+                </div>
+
+                {/* Progress bar */}
+                <div style={{ height:8, background:T.surface2, borderRadius:4, overflow:'hidden', marginBottom:10, border:`1px solid ${T.border}` }}>
+                  <div style={{
+                    height:'100%', width:`${levelXp}%`,
+                    background:`linear-gradient(90deg,${T.accent},${T.accentHi})`,
+                    borderRadius:4, transition:'width 0.6s ease',
+                    boxShadow:`0 0 12px ${T.accentLo}`,
+                  }} />
+                </div>
+                <div style={{ fontFamily:T.mono, fontSize:10, color:T.muted }}>
+                  {100 - levelXp} XP to next level
+                </div>
+
+                {/* Mini XP milestones */}
+                <div style={{ display:'flex', gap:6, marginTop:16, flexWrap:'wrap' }}>
+                  {[100,500,1000,2500].map(milestone => {
+                    const reached = xp >= milestone;
+                    return (
+                      <div key={milestone} style={{
+                        fontFamily:T.mono, fontSize:9, padding:'3px 8px', borderRadius:10,
+                        color: reached ? T.amber : T.muted2,
+                        background: reached ? T.amberLo : 'transparent',
+                        border: `1px solid ${reached ? 'rgba(245,158,11,0.3)' : T.border}`,
+                        transition:'all 0.2s',
+                      }}>
+                        {reached ? '✓ ' : ''}{milestone} XP
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick actions */}
+            <div style={{ display:'flex', gap:10 }}>
+              <Link href="/" style={{ textDecoration:'none', flex:1 }}>
+                <button style={{
+                  width:'100%', padding:'12px', borderRadius:10,
+                  background:`linear-gradient(135deg,${T.accent},#6d28d9)`,
+                  border:'none', color:'#fff',
+                  fontFamily:T.display, fontSize:13, fontWeight:700,
+                  cursor:'pointer', transition:'all 0.2s',
+                  boxShadow:`0 4px 20px ${T.accentLo}`,
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.transform='translateY(-1px)'; e.currentTarget.style.boxShadow=`0 6px 28px ${T.accentGlow}`; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow=`0 4px 20px ${T.accentLo}`; }}
+                >
+                  ⚡ New Challenge
+                </button>
+              </Link>
             </div>
 
           </div>
         </div>
       </main>
 
-      <style>{fonts + extra}</style>
+      <Fonts />
+      <style>{`
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes spin  { to{transform:rotate(360deg)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+      `}</style>
     </div>
   );
 }
 
-function Nav({ skeleton, session, xp }) {
+// ── SUB COMPONENTS ──────────────────────────────
+
+function NavBar({ skeleton, session, xp }) {
   return (
-    <nav style={S.nav}>
-      <div style={S.navLogo}>
-        <span style={{ width:8, height:8, borderRadius:'50%', background:'#00e5ff', boxShadow:'0 0 12px #00e5ff', display:'inline-block', animation:'pulse 2s ease-in-out infinite' }} />
-        <span><span style={{ color:'#5a6070' }}>{'{ > }'}</span> code_runner</span>
-      </div>
-      {skeleton
-        ? <div style={{ display:'flex', gap:10 }}>
-            <div style={{ ...S.skel, width:80,  height:28, borderRadius:20 }} />
-            <div style={{ ...S.skel, width:38,  height:38, borderRadius:'50%' }} />
+    <nav style={{
+      position:'sticky', top:0, zIndex:100,
+      display:'flex', justifyContent:'space-between', alignItems:'center',
+      padding:'14px 48px',
+      background:'rgba(12,14,20,0.8)',
+      backdropFilter:'blur(24px)',
+      borderBottom:`1px solid ${T.border}`,
+    }}>
+      {/* Logo */}
+      <Link href="/" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
+        <div style={{ width:28, height:28, borderRadius:8, background:`linear-gradient(135deg,${T.accent},#6d28d9)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, boxShadow:`0 0 14px ${T.accentLo}` }}>⚡</div>
+        <span style={{ fontFamily:T.display, fontSize:16, fontWeight:800, color:T.text, letterSpacing:-0.5 }}>CodeRunner</span>
+      </Link>
+
+      {skeleton ? (
+        <div style={{ display:'flex', gap:10 }}>
+          <div style={{ ...sk, width:80, height:28, borderRadius:20 }} />
+          <div style={{ ...sk, width:36, height:36, borderRadius:'50%' }} />
+        </div>
+      ) : (
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontFamily:T.mono, fontSize:12, padding:'6px 14px', background:T.amberLo, border:`1px solid rgba(245,158,11,0.3)`, borderRadius:20, color:T.amber }}>
+            ⚡ {xp} XP
+          </span>
+          <div style={{ width:36, height:36, borderRadius:'50%', background:`linear-gradient(135deg,${T.accent},${T.green})`, padding:2 }}>
+            <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:T.surface, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              {session?.user?.image
+                ? <Image src={session.user.image} alt="avatar" width={32} height={32} style={{ borderRadius:'50%', objectFit:'cover' }} />
+                : <span style={{ fontFamily:T.display, fontSize:13, fontWeight:700, color:T.text }}>{session?.user?.name?.[0]}</span>
+              }
+            </div>
           </div>
-        : <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <span style={S.xpPill}>⚡ {xp} XP</span>
-            <Link href="/" style={{ textDecoration:'none' }}>
-              <div style={{ width:38, height:38, borderRadius:'50%', background:'linear-gradient(135deg,#00e5ff,#00ff94)', padding:2 }}>
-                <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:'#090d1a', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  {session?.user?.image
-                    ? <Image src={session.user.image} alt="avatar" width={34} height={34} style={{ borderRadius:'50%' }} />
-                    : <span style={{ fontSize:14, fontWeight:700, color:'#e8eaf0' }}>{session?.user?.name?.[0]}</span>
-                  }
-                </div>
-              </div>
-            </Link>
-          </div>
-      }
+        </div>
+      )}
     </nav>
   );
 }
 
-function GridOverlay() {
-  return (
-    <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0,
-      backgroundImage:'linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px)',
-      backgroundSize:'60px 60px' }} />
-  );
-}
-
-function Orbs() {
+function Mesh() {
   return (
     <>
-      <div style={{ position:'fixed', width:500, height:500, borderRadius:'50%', background:'rgba(0,229,255,0.05)', filter:'blur(120px)', top:-100, left:-100, pointerEvents:'none', zIndex:0 }} />
-      <div style={{ position:'fixed', width:400, height:400, borderRadius:'50%', background:'rgba(255,184,0,0.04)',  filter:'blur(120px)', bottom:100, right:-80, pointerEvents:'none', zIndex:0 }} />
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0,
+        backgroundImage:`linear-gradient(${T.border} 1px,transparent 1px),linear-gradient(90deg,${T.border} 1px,transparent 1px)`,
+        backgroundSize:'72px 72px' }} />
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0,
+        background:'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.07) 0%, transparent 60%)' }} />
+      <div style={{ position:'fixed', width:600, height:600, borderRadius:'50%', background:'rgba(124,58,237,0.05)', filter:'blur(140px)', top:-150, left:-100, pointerEvents:'none', zIndex:0 }} />
+      <div style={{ position:'fixed', width:400, height:400, borderRadius:'50%', background:'rgba(245,158,11,0.04)', filter:'blur(120px)', bottom:80, right:-60, pointerEvents:'none', zIndex:0 }} />
     </>
   );
 }
 
-const S = {
-  page: {
-    minHeight:'100vh', background:'#050810', color:'#e8eaf0',
-    fontFamily:"'Syne', sans-serif", position:'relative', overflowX:'hidden',
-  },
-  nav: {
-    position:'sticky', top:0, zIndex:100,
-    display:'flex', justifyContent:'space-between', alignItems:'center',
-    padding:'16px 48px',
-    background:'rgba(5,8,16,0.85)', backdropFilter:'blur(20px)',
-    borderBottom:'1px solid rgba(255,255,255,0.07)',
-  },
-  navLogo: {
-    display:'flex', alignItems:'center', gap:10,
-    fontFamily:"'Space Mono',monospace", fontSize:15, fontWeight:700, color:'#00e5ff', letterSpacing:'-0.5px',
-  },
-  xpPill: {
-    fontFamily:"'Space Mono',monospace", fontSize:12,
-    padding:'6px 14px', background:'rgba(255,184,0,0.1)',
-    border:'1px solid rgba(255,184,0,0.25)', borderRadius:20, color:'#ffb800',
-  },
-  main: {
-    position:'relative', zIndex:1,
-    maxWidth:1100, margin:'0 auto', padding:'40px 48px 80px',
-  },
-  profileHeader: {
-    display:'flex', alignItems:'flex-start', gap:20, flexWrap:'wrap',
-  },
-  backBtn: {
-    fontFamily:"'Space Mono',monospace", fontSize:11,
-    padding:'7px 14px', background:'transparent',
-    border:'1px solid rgba(255,255,255,0.1)',
-    color:'#5a6070', borderRadius:6,
-    cursor:'pointer', letterSpacing:'0.5px',
-    transition:'all 0.2s', alignSelf:'flex-start',
-  },
-  card: {
-    background:'#090d1a', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, overflow:'hidden',
-  },
-  cardHeader: {
-    padding:'18px 24px', borderBottom:'1px solid rgba(255,255,255,0.07)',
-    display:'flex', alignItems:'center', justifyContent:'space-between',
-  },
-  cardTitle: {
-    fontFamily:"'Space Mono',monospace", fontSize:10,
-    color:'#5a6070', textTransform:'uppercase', letterSpacing:2,
-  },
-  skel: { background:'rgba(255,255,255,0.05)', animation:'pulse 1.5s ease-in-out infinite' },
-  signinWrap: {
-    minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center',
-    position:'relative', zIndex:1,
-  },
-  signinCard: {
-    width:'100%', maxWidth:400, padding:'52px 44px',
-    background:'#090d1a', border:'1px solid rgba(255,255,255,0.15)',
-    borderRadius:16, textAlign:'center', position:'relative', overflow:'hidden',
-  },
-  signinLogo: {
-    fontFamily:"'Space Mono',monospace", fontSize:12, color:'#00e5ff',
-    letterSpacing:2, marginBottom:28,
-    display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-  },
-  signinBtn: {
-    width:'100%', padding:15, background:'transparent',
-    border:'1px solid rgba(255,255,255,0.15)', borderRadius:10,
-    color:'#e8eaf0', fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:600,
-    cursor:'pointer', transition:'all 0.2s',
-  },
+function Noise() {
+  return (
+    <div style={{
+      position:'fixed', inset:0, pointerEvents:'none', zIndex:1, opacity:0.025,
+      backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+      backgroundRepeat:'repeat', backgroundSize:'128px 128px',
+    }} />
+  );
+}
+
+function Fonts() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+      * { box-sizing: border-box; }
+      body { margin: 0; background: ${T.bg}; }
+      ::-webkit-scrollbar { width: 5px; }
+      ::-webkit-scrollbar-track { background: ${T.bg}; }
+      ::-webkit-scrollbar-thumb { background: ${T.muted2}; border-radius: 3px; }
+    `}</style>
+  );
+}
+
+// ── SHARED STYLES ──────────────────────────────
+const pg = {
+  minHeight:'100vh', background:T.bg, color:T.text,
+  fontFamily:T.display, position:'relative', overflowX:'hidden',
 };
-
-const fonts = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap');
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  @keyframes spin   { to { transform: rotate(360deg); } }
-  * { box-sizing: border-box; }
-  body { margin: 0; }
-  ::-webkit-scrollbar{width:6px}
-  ::-webkit-scrollbar-track{background:#050810}
-  ::-webkit-scrollbar-thumb{background:#3a3f50;border-radius:3px}
-`;
-
-const extra = ``;
+const mainS = {
+  position:'relative', zIndex:2,
+  maxWidth:1100, margin:'0 auto', padding:'44px 48px 80px',
+};
+const card = {
+  background:T.surface, border:`1px solid ${T.border}`, borderRadius:16,
+};
+const sk = {
+  background:'rgba(255,255,255,0.05)',
+  animation:'pulse 1.5s ease-in-out infinite',
+};
