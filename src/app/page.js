@@ -225,10 +225,10 @@ export default function Home() {
           ══════════════════════════════ */}
           <div className="challenge-card" style={{ marginBottom: 40 }}>
             {/* Ambient glow reacting to difficulty */}
-            <div className="challenge-glow" />
+            <div className="challenge-glow" style={{ background: `radial-gradient(ellipse at top, ${activeDiff.lo} 0%, transparent 50%)`, transition: "background 0.4s" }} />
 
             {/* Color stripe top */}
-            <div className="challenge-stripe" />
+            <div className="challenge-stripe" style={{ background: activeDiff.color, transition: "background 0.4s" }} />
 
             {/* Card top bar */}
             <div className="card-header">
