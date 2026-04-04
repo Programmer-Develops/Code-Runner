@@ -139,7 +139,7 @@ export async function GET(request) {
       recent,
       badges,
       questionStats,
-      recommended
+      recommended,
     });
   } catch (error) {
     console.error("Profile API error:", error);
