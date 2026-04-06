@@ -549,6 +549,6 @@ function Fonts() {
       ::-webkit-scrollbar { width: 5px; }
       ::-webkit-scrollbar-track { background: ${T.bg}; }
       ::-webkit-scrollbar-thumb { background: ${T.muted2}; border-radius: 3px; }
-    `}</style>
+    `}<style/>
   );
 }
