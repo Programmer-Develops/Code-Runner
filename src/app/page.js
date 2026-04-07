@@ -146,7 +146,7 @@ export default function Home() {
 
       <main className="main">
 
-        {/* ── HERO ── */}
+          ── HERO ──
         <section className="hero-section">
           <div className="hero-content" style={{ textAlign: "left" }}>
             <div className="eyebrow">
