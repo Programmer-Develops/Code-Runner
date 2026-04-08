@@ -550,5 +550,5 @@ function Fonts() {
       ::-webkit-scrollbar-track { background: ${T.bg}; }
       ::-webkit-scrollbar-thumb { background: ${T.muted2}; border-radius: 3px; }
     `}</style>
-  );
+  )
 }
