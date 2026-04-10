@@ -551,4 +551,4 @@ function Fonts() {
       ::-webkit-scrollbar-thumb { background: ${T.muted2}; border-radius: 3px; }
     `}</style>
   )
-}
+};
