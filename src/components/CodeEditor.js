@@ -26,6 +26,13 @@ export default function CodeEditor({ language, onExecute, onSubmit }) {
           value={code}
           onChange={setCode}
           theme="vs-dark"
+          options={{
+            autoIndent: 'full',
+            insertSpaces: false,
+            tabSize: 4,
+            detectIndentation: true,
+            automaticLayout: true,
+          }}
         />
       </div>
       <div className="mb-4">
