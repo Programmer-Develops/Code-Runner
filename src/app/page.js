@@ -65,7 +65,6 @@ export default function Home() {
     router.push(`/question?difficulty=${difficulty}&language=${language}`);
   };
 
-  // ── LOADING ────────────────────────────────────
   if (status === "loading") {
     return (
       <div className="page">
@@ -90,7 +89,6 @@ export default function Home() {
     );
   }
 
-  // ── SIGN IN ─────────────────────────────────────
   if (status === "unauthenticated") {
     return (
       <div className="page">
@@ -131,7 +129,6 @@ export default function Home() {
     );
   }
 
-  // ── AUTHENTICATED ───────────────────────────────
   const userXp    = session.user.xp || 0;
   const userRank  = leaderboard.findIndex(u => u.name === session.user.name) + 1;
   const activeDiff = DIFF[difficulty];
@@ -141,12 +138,10 @@ export default function Home() {
     <div className="page">
       <Mesh /><Noise />
 
-      {/* ── NAV ── */}
       <NavBar session={session} userXp={userXp} signOut={signOut} xpAnim={xpAnim} />
 
       <main className="main">
 
-          ── HERO ──
         <section className="hero-section">
           <div className="hero-content" style={{ textAlign: "left" }}>
             <div className="eyebrow">
@@ -164,7 +159,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Hero stat cards */}
           <div className="hero-stats">
             {[
               { label:"Your XP",  val: userXp,                              color: T.amber,  icon:"⚡" },
@@ -180,23 +174,15 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── DIVIDER ── */}
         <div className="section-divider" />
 
-        {/* ── MAIN GRID ── */}
         <div className="content-grid">
 
-          {/* ══════════════════════════════
-              CHALLENGE CARD
-          ══════════════════════════════ */}
           <div className="challenge-card" style={{ marginBottom: 40 }}>
-            {/* Ambient glow reacting to difficulty */}
             <div className="challenge-glow" style={{ background: `radial-gradient(ellipse at top, ${activeDiff.lo} 0%, transparent 50%)`, transition: "background 0.4s" }} />
 
-            {/* Color stripe top */}
             <div className="challenge-stripe" style={{ background: activeDiff.color, transition: "background 0.4s" }} />
 
-            {/* Card top bar */}
             <div className="card-header">
               <span className="card-title">New Challenge</span>
               <div className="badge badge-live">
@@ -207,7 +193,6 @@ export default function Home() {
 
             <div className="challenge-content">
 
-              {/* DIFFICULTY */}
               <div className="difficulty-section">
                 <div className="flex justify-between items-center" style={{ marginBottom:12 }}>
                   <span className="field-label">Difficulty</span>
@@ -230,7 +215,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* LANGUAGE */}
               <div className="language-section">
                 <span className="field-label">Language</span>
                 <div className="language-grid">
@@ -249,7 +233,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* START BUTTON */}
               <button
                 onClick={startChallenge}
                 disabled={starting}
@@ -263,22 +246,16 @@ export default function Home() {
                 }
               </button>
 
-              {/* Reassurance line */}
               <p className="challenge-reassurance">
                 AI generates a unique problem every time
               </p>
             </div>
           </div>
 
-          {/* ══════════════════════════════
-              LEADERBOARD
-          ══════════════════════════════ */}
           <div className="leaderboard-card" style={{ marginBottom: 40 }}>
 
-            {/* Amber top stripe */}
             <div className="leaderboard-stripe" />
 
-            {/* Tab bar */}
             <div className="tab-bar">
               <div className="tab-buttons">
                 {[["board","Rankings"],["feed","Live Feed"]].map(([id,label]) => (
@@ -291,10 +268,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ── RANKINGS TAB ── */}
             {lbTab === "board" && (
               <div>
-                {/* Top 3 Podium */}
                 {leaderboard.length >= 3 && (
                   <div className="podium">
                     <div className="podium-grid">
@@ -329,7 +304,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Ranks 4-10 */}
                 <div>
                   {leaderboard.slice(leaderboard.length >= 3 ? 3 : 0, 10).map((user, idx) => {
                     const i = leaderboard.length >= 3 ? idx + 3 : idx;
@@ -337,7 +311,6 @@ export default function Home() {
                     const pct = Math.round((user.xp / maxXp) * 100);
                     return (
                       <div key={user._id || i} className={`rank-item ${isMe ? 'me' : ''}`}>
-                        {/* XP bar fill */}
                         <div className={`rank-xp-bar ${isMe ? 'me' : ''}`} style={{ width:`${pct*0.55}%` }}>
                           <div className="rank-xp-fill" style={{ width:`${Math.min(100, (user.xp / (user.xp + 100)) * 100)}%` }}></div>
                         </div>
@@ -366,7 +339,6 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Your position if outside top 10 */}
                 {userRank > 10 && (
                   <div className="user-rank-outside">
                     <span className="rank-number">#{userRank}</span>
@@ -378,7 +350,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Footer */}
                 <div className="leaderboard-footer">
                   <span className="text-mono text-xs" style={{ color:T.muted2 }}>coders globally</span>
                   <span className="text-mono text-xs" style={{ color:T.muted2 }}>updates live</span>
@@ -386,7 +357,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* ── LIVE FEED TAB ── */}
             {lbTab === "feed" && (
               <div>
                 <div className="live-feed-container">
@@ -441,8 +411,6 @@ export default function Home() {
   );
 }
 
-// ── SUB-COMPONENTS ──────────────────────────────
-
 function NavBar({ skeleton, session, userXp, signOut: doSignOut, xpAnim }) {
   const sk = {
     background:'rgba(255,255,255,0.05)',
@@ -469,7 +437,6 @@ function NavBar({ skeleton, session, userXp, signOut: doSignOut, xpAnim }) {
         </div>
       ) : (
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          {/* XP pill */}
           <div style={{
             fontFamily:T.mono, fontSize:12, padding:"6px 14px",
             background:T.amberLo, border:`1px solid rgba(245,158,11,0.3)`,
@@ -480,7 +447,6 @@ function NavBar({ skeleton, session, userXp, signOut: doSignOut, xpAnim }) {
             ⚡ {userXp} XP
           </div>
 
-          {/* Avatar */}
           <Link href="/profile" style={{ textDecoration:"none" }}>
             <div style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,${T.accent},${T.green})`, padding:2, cursor:"pointer" }}>
               <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:T.surface, overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -492,7 +458,6 @@ function NavBar({ skeleton, session, userXp, signOut: doSignOut, xpAnim }) {
             </div>
           </Link>
 
-          {/* Sign out */}
           <button
             onClick={doSignOut}
             style={{
@@ -520,7 +485,6 @@ function Mesh() {
       <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0,
         backgroundImage:`linear-gradient(${T.border} 1px, transparent 1px), linear-gradient(90deg, ${T.border} 1px, transparent 1px)`,
         backgroundSize:"72px 72px" }} />
-      {/* Radial vignette */}
       <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0,
         background:"radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.08) 0%, transparent 60%)" }} />
       <div style={{ position:"fixed", width:600, height:600, borderRadius:"50%", background:"rgba(124,58,237,0.05)", filter:"blur(140px)", top:-150, left:-100, pointerEvents:"none", zIndex:0 }} />

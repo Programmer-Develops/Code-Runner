@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation'
+import CodeEditor from '../../components/CodeEditor';
 
 function QuestionPageContent() {
   const { data: session } = useSession();
@@ -356,13 +357,10 @@ if __name__ == '__main__':
 
           {/* Code Editor */}
           <div className="flex-1 overflow-hidden">
-            <textarea
+            <CodeEditor
+              language={language.toLowerCase()}
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full h-full bg-gray-900 p-4 font-mono text-sm resize-none focus:outline-none"
-              placeholder="Write your code here..."
-              spellCheck="false"
-              style={{ fontFamily: 'Monaco, Consolas, "Courier New", monospace' }}
+              onChange={setCode}
             />
           </div>
 
@@ -379,6 +377,16 @@ if __name__ == '__main__':
                 }`}
               >
                 Test Cases
+              </button>
+              <button
+                onClick={() => setActiveTab('output')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                  activeTab === 'output' 
+                    ? 'border-white text-white' 
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                Output
               </button>
               <button
                 onClick={() => setActiveTab('results')}
@@ -404,6 +412,15 @@ if __name__ == '__main__':
                       </pre>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {activeTab === 'output' && (
+                <div className="text-sm">
+                  <p className="text-gray-400 mb-2">Program output:</p>
+                  <pre className="bg-gray-900 p-4 rounded font-mono whitespace-pre-wrap text-sm min-h-[180px]">
+                    {output || 'Run the code to see output here.'}
+                  </pre>
                 </div>
               )}
 
