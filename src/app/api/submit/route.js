@@ -6,7 +6,7 @@ import Question from '@/models/Question';
 
 export async function POST(request) {
   try {
-    const { userId, questionId, code, language, testResults, passed } = await request.json();
+    const { userId, questionId, code, language, testResults, passed } = await request.json()
 
     // Validate required fields
     if (!userId || !questionId || !code || !language) {
