@@ -16,7 +16,7 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    await connectToDatabase();
+    await connectToDatabase()
 
     // Find the question
     const question = await Question.findById(questionId);
