@@ -14,7 +14,7 @@ export async function POST(request) {
         message: 'Missing required fields',
         error: 'userId, questionId, code, and language are required' 
       }, { status: 400 })
-    }
+    };
 
     await connectToDatabase()
 
